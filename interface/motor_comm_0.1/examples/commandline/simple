@@ -1,0 +1,13 @@
+motor-comm -v enable
+motor-comm -v standby-off
+motor-comm -v loop-mode-off
+
+
+motor-comm -v load-buffer test_kine.txt
+motor-comm -v move2start
+motor-comm -v -w start
+
+
+motor-comm -v move2zero
+motor-comm -v standby-on
+motor-comm -v status

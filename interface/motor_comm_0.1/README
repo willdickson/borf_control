@@ -1,0 +1,16 @@
+motor_comm
+==========
+
+motor_comm provides a user space communication w/ the motor_ctl hard
+real-time (RTAI) driver. In addition to a python package it provides a
+suit of commandline functions for controlling a robot using the
+motor_ctl driver.
+
+Installation
+
+   * Installation instructions can be found in the INSTALL file.  
+     
+Author
+
+   * Will Dickson (wbd@caltech.edu)
+ 

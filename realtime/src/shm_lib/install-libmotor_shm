@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo installing libmotor_shm.so.1.0.1 to /usr/local/lib/libmotor_shm.so.1.0.1
+cp libmotor_shm.so.1.0.1 /usr/local/lib/libmotor_shm.so.1.0.1
+echo creating symbolic link to libmotor_shm.so.1   
+test -e /usr/local/lib/libmotor_shm.so.1 || ln -s /usr/local/lib/libmotor_shm.so.1.0.1 /usr/local/lib/libmotor_shm.so.1   
+exit 0    
+
+

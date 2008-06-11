@@ -1,0 +1,12 @@
+motor-comm -v enable
+motor-comm -v standby-off
+motor-comm -v move2zero
+motor-comm -v moveby 500 500
+motor-comm -v moveby n500 n500
+motor-comm -v moveby 1000 n1000
+motor-comm -v move2pos n2000 2000
+motor-comm -v moveby 3000 n3000
+motor-comm -v move2pos n4000 4000
+motor-comm -v move2zero
+
+

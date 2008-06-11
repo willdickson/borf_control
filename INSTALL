@@ -1,0 +1,25 @@
+borf_control installation instructions
+=========================================
+
+Requirements
+-------------
+
+Installation
+-------------
+
+motor_ctl, libmotor_shm: 
+ # from borf_control/ directory
+ make clean
+ make
+ sudo make install
+
+motor_comm:
+ # from motor_control/interface/motor_comm_x.x
+ sudo python setup.py install or sudo python setup.py develop
+
+motor_shm:
+ # from motor_control/interface/motor_comm_x.x
+ sudo python setup.py install or sudo python setup.py develop
+
+
+ 

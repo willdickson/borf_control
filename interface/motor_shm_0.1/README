@@ -1,0 +1,15 @@
+motor_shm
+=========
+
+motor_shm is a python ctypes wrapper around the libmotor_shm
+library. It is used for communication with the motor_ctl hard
+real-time (RTAI) driver. 
+
+Installation
+
+   * Installation instructions can be found in the INSTALL file.  
+     
+Author
+
+   * Will Dickson (wbd@caltech.edu)
+ 

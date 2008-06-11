@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+#
+# motor-ctl - script used to load the hard real-time motor driver
+# into the kernel. 
+#
+# Will Dickson 03/12/2008
+# -----------------------------------------------------------------
+udev_sleep=0.25
+max_cnt=5
+comedi_dev=/dev/comedi0
+unamer=$(uname -r)
+rtai_dir=/usr/realtime/modules/
+
+
+# Wait until udev configure comedi device or we reach max count
+function waitfor_comedi_dev {
+    cnt=0
+    until test -e comedi_dev || [ $cnt = $max_cnt ]
+    do
+	sleep $udev_sleep
+	let cnt=cnt+1
+    done
+}
+
+# Wait until udev configures rtai devices
+function waitfor_rtf0 {
+    cnt=0
+    until test -e /dev/rtf0 || [ $cnt = $max_cnt ] 
+    do
+	echo waiting for rtf0 - sleeping
+	sleep 0.25
+	let cnt=cnt+1
+    done
+}
+
+# Insert required kernel modules required for rtai and comedi
+# and configure device
+function start_motor_ctl {    
+    echo starting motor_ctl
+    sudo insmod ${rtai_dir}rtai_hal.ko 
+    sudo insmod ${rtai_dir}rtai_sched.ko 
+    sudo insmod ${rtai_dir}rtai_fifos.ko
+    sudo insmod ${rtai_dir}rtai_sem.ko
+    sudo insmod ${rtai_dir}rtai_mbx.ko
+    sudo insmod ${rtai_dir}rtai_msg.ko
+    sudo insmod ${rtai_dir}rtai_shm.ko
+    sudo insmod ${rtai_dir}rtai_wd.ko
+    sudo modprobe comedi
+    sudo modprobe kcomedilib
+    sudo insmod ${rtai_dir}rtai_comedi.ko
+    sudo modprobe ni_pcimio
+    waitfor_comedi_dev # Wait for udev device configuration 
+    sudo comedi_config $comedi_dev ni_pcimio 
+    waitfor_rtf0
+    sudo insmod /usr/local/lib/modules/$unamer/motor_ctl.ko
+    echo "done"
+}
+
+# Remove required kernel modules for rtai and comedi
+function stop_motor_ctl {
+    echo stopping motor_ctl
+    sudo rmmod motor_ctl
+    sudo modprobe -r ni_pcimio
+    sudo rmmod rtai_comedi
+    sudo modprobe -r kcomedilib
+    sudo modprobe -r comedi
+    sudo rmmod rtai_wd
+    sudo rmmod rtai_shm
+    sudo rmmod rtai_msg
+    sudo rmmod rtai_mbx
+    sudo rmmod rtai_sem
+    sudo rmmod rtai_fifos
+    sudo rmmod rtai_sched
+    sudo rmmod rtai_hal
+    echo "done"
+}
+
+# Main --------------------------------------------------
+case $1 in
+
+    start) start_motor_ctl;;
+
+    stop) stop_motor_ctl;;
+
+    *) echo uknown command $1; exit 1;;
+
+    esac
+exit 0
+
+
+
