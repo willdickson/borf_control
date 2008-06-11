@@ -20,8 +20,7 @@ clean: clean
 
 install: install
 	$(MAKE) install -C $(PWD)$(driver_dir)
-	$(MAKE) install -C $(PWD)$(driver_dir)
-#	$(MAKE) install -C $(PWD)$(shm_lib_dir) 
+	$(MAKE) install -C $(PWD)$(shm_lib_dir) 
 #	$(MAKE) install -C $(PWD)$(motor_comm_dir)
 #	$(MAKE) install -C $(PWD)$(motor_shm_dir)
 
