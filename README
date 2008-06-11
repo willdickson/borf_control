@@ -4,7 +4,7 @@ borf_control
 motor_control software provides motor control and data aquisition
 capabilities for the upgraded Bride of Robofly System (BORF) and
 possibly for the Original Robofly system (ORF). The motor_control 
-software consists of 
+software consists of 4 main components.
 
 * motor_ctl: a hard realtime driver implemented as an RTAI kernel
   module. The module provides realtime motor control and data
