@@ -9,3 +9,4 @@ syntax: glob
 *.mod.c
 *.symvers
 *.mod
+*.so.*
