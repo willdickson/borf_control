@@ -10,7 +10,7 @@
 #include <rtai_comedi.h>
 #include "motor_ctl.h"
 
-//#define DEBUG
+#define DEBUG
 #define SUCCESS 0
 #define FAIL -1
 #define ERROR_LOCKED -2
@@ -209,7 +209,7 @@ int pwm_ns_per_index()
 int shm_alloc(void) {
 
 #ifdef DEBUG
-  printf("\t    *shm_alloc\n");
+  printf("\t    *shm_alloc (C)\n");
 #endif
   
   // Open shared memory 
@@ -266,7 +266,7 @@ int shm_free(void) {
   int rval3;
 
 #ifdef DEBUG
-  printf("\t    *shm_free\n");
+  printf("\t    *shm_free (C)\n");
 #endif
 
   rval0 = rt_shm_free(nam2num(SHM_OS_BUFFER));
@@ -301,7 +301,7 @@ int get_buffer_len(int buff_type) {
   struct status_info_str status_info;
 
 #ifdef DEBUG
-  printf("\t    *get_buffer_len\n");
+  printf("\t    *get_buffer_len (C)\n");
 #endif
 
   // Check outscan status
@@ -340,7 +340,7 @@ int read_ain_buffer(void *data, int nrow, int ncol, int s0, int s1)
   int *ptr;
 
 #ifdef DEBUG
-  printf("\t    *read_ain_buffer\n");
+  printf("\t    *read_ain_buffer (C)\n");
 #endif
 
   // Check length - must be equal to os_buffer_shm->len as this is how many samples
@@ -382,7 +382,7 @@ int read_os_buffer(void *data, int nrow, int ncol, int s0, int s1)
   int *ptr;
 
 #ifdef DEBUG
-  printf("\t    *read_os_buffer\n");
+  printf("\t    *read_os_buffer (C)\n");
 #endif
 
   // Check length
@@ -422,7 +422,7 @@ int read_os_buffer_1st(void *data, int n, int s)
   int temp;
 
 #ifdef DEBUG
-  printf("\t    *read_os_buffer_1st\n");
+  printf("\t    *read_os_buffer_1st (C)\n");
 #endif
 
   if (n!=NUM_MOTOR) {
@@ -458,7 +458,7 @@ int load_buffer(int buff_type, void *data, int nrow, int ncol, int s0, int s1)
   struct buffer_str *buffer_shm;
 
 #ifdef DEBUG
-  printf("\t    *load_buffer\n");
+  printf("\t    *load_buffer (C)\n");
 #endif
 
   // Check outscan status
@@ -511,11 +511,15 @@ int load_buffer(int buff_type, void *data, int nrow, int ncol, int s0, int s1)
 int get_status_info(struct status_info_str *status_info) 
 {
 #ifdef DEBUG
-  printf("\t    *get_status_info\n");
+  printf("\t    *get_status_info (C)\n");
 #endif
 
   // Copy status info 
   *status_info = *status_info_shm;
+
+  //#ifdef DEBUG
+  //printf("\t    *done\n");
+  //#endif
 
   return SUCCESS;
 }

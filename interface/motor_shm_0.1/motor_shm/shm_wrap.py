@@ -7,12 +7,14 @@
 # -----------------------------------------------------------------
 import ctypes
 import scipy
+import sys
 
-DEBUG=False
+DEBUG=True
 
 def debug_print(msg):
     if DEBUG==True:
         print '\t    *%s'%(msg,)
+        sys.stdout.flush()
 
 # Load library and extract functions
 libmotor_shm = ctypes.cdll.LoadLibrary("libmotor_shm.so.1")
@@ -168,7 +170,9 @@ def get_status_info():
     debug_print('get_status_info')
     status_info = status_info_cstr()
     p_status_info = ctypes.pointer(status_info)
+    debug_print('in of libmotor_shm.get_status_info(p_status_info)')   # temporary
     flag = libmotor_shm.get_status_info(p_status_info)
+    debug_print ('out of libmotor_shm.get_status_info(p_status_info)') # temporary
     if flag == error_malloc():
         raise MemoryError, 'failed to allocate shared memory buffer'
     status_info_dict = {}

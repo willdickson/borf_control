@@ -22,7 +22,7 @@ from motor_shm import os_buffer
 from motor_shm import shm_alloc
 from motor_shm import shm_free
 
-DEBUG=False
+DEBUG=True
 
 NSEC2SEC = 1.0e-9
 DFLT_MOVE_ACCEL = 100.0 #steps/sec**2
