@@ -8,6 +8,7 @@
 --------------------------------------------------------------------*/
 #include <stdio.h>
 #include <rtai_comedi.h>
+#include <sys/mman.h>
 #include "motor_ctl.h"
 
 #define DEBUG
@@ -16,6 +17,9 @@
 #define ERROR_LOCKED -2
 #define ERROR_MALLOC -3
 #define ERROR_SIZE -4
+#define ERROR_MLOCK -5
+#define ERROR_MUNLOCK  -6
+#define ERROR_FREE -7
 
 // Shared memory buffers
 static struct buffer_str *os_buffer_shm;
@@ -208,6 +212,8 @@ int pwm_ns_per_index()
 // -----------------------------------------------------------------------
 int shm_alloc(void) {
 
+  int flag;
+
 #ifdef DEBUG
   printf("\t    *shm_alloc (C)\n");
 #endif
@@ -227,7 +233,7 @@ int shm_alloc(void) {
 						     sizeof(struct buffer_str),
 						     USE_VMALLOC
 						     );
-  if (os_buffer_shm==0) {
+  if (mv_buffer_shm==0) {
     printf("*** warning allocation of mv_buffer_shm failed\n");
     return  ERROR_MALLOC;
   }
@@ -254,6 +260,29 @@ int shm_alloc(void) {
 
   rt_global_heap_open();
 
+  
+  // Lock buffers into memory
+  flag = mlock(os_buffer_shm, sizeof(struct buffer_str));
+  if (flag != SUCCESS) {
+    printf("*** warning mlock of os_buffer_shm failed\n");
+    return ERROR_MLOCK;
+  }
+  flag = mlock(mv_buffer_shm, sizeof(struct buffer_str));
+  if (flag |= SUCCESS) {
+    printf("*** warning mlock of mv_buffer_shm failed\n");
+    return ERROR_MLOCK;
+  }
+  flag = mlock(status_info_shm, sizeof(struct status_info_str));
+  if (flag |= SUCCESS) {
+    printf("*** warning mlock of status_info_shm failed\n");
+    return ERROR_MLOCK;
+  }
+  flag = mlock(ain_buffer_shm, sizeof(struct ain_buffer_str));
+  if (flag |= SUCCESS) {
+    printf("*** warning mlock of  ain_buffer_shm failed\n");
+    return ERROR_MLOCK;
+  }
+
   return SUCCESS;
 }
 
@@ -263,15 +292,39 @@ int shm_alloc(void) {
 // ----------------------------------------------------------------------------
 int shm_free(void) {
 
+  int mflag0;
+  int mflag1;					
+  int mflag2;
+  int mflag3;
   int rval0;
   int rval1;
   int rval2;
   int rval3;
+  
 
 #ifdef DEBUG
   printf("\t    *shm_free (C)\n");
 #endif
 
+  // Unlock buffers
+  mflag0 = munlock(os_buffer_shm, sizeof(struct buffer_str));
+  if (mflag0 != SUCCESS) {
+    printf("*** warning munlock of os_buffer_shm failed\n");
+  }
+  mflag1 = munlock(mv_buffer_shm, sizeof(struct buffer_str));
+  if (mflag1 |= SUCCESS) {
+    printf("*** warning munlock of mv_buffer_shm failed\n");
+  }
+  mflag2 = munlock(status_info_shm, sizeof(struct status_info_str));
+  if (mflag2 |= SUCCESS) {
+    printf("*** warning munlock of status_info_shm failed\n");
+  }
+  mflag3 = munlock(ain_buffer_shm, sizeof(struct ain_buffer_str));
+  if (mflag3 |= SUCCESS) {
+    printf("*** warning munlock of  ain_buffer_shm failed\n");
+  }
+
+  // Free memory
   rval0 = rt_shm_free(nam2num(SHM_OS_BUFFER));
   if (rval0==0) {
     printf("*** warning freeing of shared memory os_buffer_shm failed\n");
@@ -288,10 +341,21 @@ int shm_free(void) {
   if (rval1==0) {
     printf("*** warning freeing of shared memory ain_buffer_shm failed\n");
   }
-
+  
   rt_global_heap_close();
 
-  return SUCCESS;
+  // Check mflags
+  if (mflag0 = FAIL || mflag1 == FAIL || mflag2 == FAIL || mflag3 == FAIL) {
+    return ERROR_MLOCK;
+  }
+
+  // Check rvals
+  if (rval0 == FAIL || rval1== FAIL || rval2 == FAIL || rval3 == FAIL) {
+    return ERROR_FREE;
+  }
+  else {
+    return SUCCESS;
+  }
 }
 
 // --------------------------------------------------------------------------------
