@@ -9,7 +9,7 @@ import ctypes
 import scipy
 import sys
 
-DEBUG=True
+DEBUG=False
 
 def debug_print(msg):
     if DEBUG==True:

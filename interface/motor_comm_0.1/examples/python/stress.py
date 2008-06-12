@@ -17,7 +17,7 @@ comm.loop_mode('off')
 dt = comm.dt()
 num_motor = comm.num_motor()
 
-num_trial = 20
+num_trial = 200
 for i in range(0,num_trial):
     
     T = 5.0 + scipy.rand()*(6.0-5.0)
@@ -26,8 +26,8 @@ for i in range(0,num_trial):
     A1 = scipy.rand()*(200.0 - 20.0)
     #A2 = 20.0 + scipy.rand()*(200.0 - 20.0)
     print 
-    #print '%d/%d) creating kinematics: T %1.2f, num_period %d, A1 %1.2f, A2 %1.2f'%(i+1,num_trial,T, num_period, A1, A2) 
-
+    print '%d/%d) creating kinematics'%(i+1,num_trial)
+    
     t = scipy.arange(0.0,n)*dt
     x = scipy.zeros((n,num_motor))
     
