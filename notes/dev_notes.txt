@@ -5,18 +5,39 @@ Will Dickson 06/12/2008 -
 
 Stability problem. The current incarnation of borf_control has a
 pretty serious stability issue which causes it to hard lock
-intermintently. I'm not sure what is cuasing this - it may have
-somethine to do with shared memory usage. This set of notes has been
+intermittently. I'm not sure what is causing this - it may have
+something to do with shared memory usage. This set of notes has been
 started to help me keep track of my debugging effort. 
 
 A couple of ideas. 
 
 * I think the stability problem has to due with shared memory as the
   problem typically seems to occur when access or freeing the shared
-  memory bewteen the realtime driver and the user space library. 
+  memory between the realtime driver and the user space library. 
 
-  One thought is that I need to ue mlock on the shared memory buffers.
+  One thought is that I need to use mlock on the shared memory buffers.
   
- 
+  A second idea is that it is a race condition. I might try commenting
+  out all spin locks in motor_ctl driver. 
+
+------------------------------------------------------------------------
+
+* Found that rt_global_heap_open() is required for user space
+  processes using shared memory.
+
+  In motor_shm.c I've added a rt_global_heap_open() to the section of
+  code just after the rt_shm_alloc's and a rt_global_heap_close() the
+  the section just after the rt_shm_free's.
+
+  This didn't seem to fix the problem and stress.py still hard locks
+  the system after running about 20-40 kinematic patterns. The final
+  command on the debuggin outout was *cmd2motor_ctl set-os-buffer.
+  I'm going to check this out.  
+
+  In addition becuase of the hard locks I should back up all the debs
+  required to make this system. and all the src packages.
+
+
+
 
 

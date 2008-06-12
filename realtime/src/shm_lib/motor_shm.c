@@ -19,7 +19,7 @@
 
 // Shared memory buffers
 static struct buffer_str *os_buffer_shm;
-static struct buffer_str *mv_buffer_shm;
+static struct buffer_str *mv_buffer_shm;      
 static struct status_info_str *status_info_shm;
 static struct ain_buffer_str *ain_buffer_shm;
 
@@ -251,6 +251,9 @@ int shm_alloc(void) {
     return ERROR_MALLOC;
   }
 
+
+  rt_global_heap_open();
+
   return SUCCESS;
 }
 
@@ -285,6 +288,9 @@ int shm_free(void) {
   if (rval1==0) {
     printf("*** warning freeing of shared memory ain_buffer_shm failed\n");
   }
+
+  rt_global_heap_close();
+
   return SUCCESS;
 }
 
