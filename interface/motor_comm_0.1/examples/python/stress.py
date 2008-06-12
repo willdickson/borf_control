@@ -20,8 +20,8 @@ num_motor = comm.num_motor()
 num_trial = 200
 for i in range(0,num_trial):
     
-    T = 5.0 + scipy.rand()*(6.0-5.0)
-    num_period = 10 #int(2.0 + scipy.rand()*(3.0 - 2.0))
+    T = 3.0 # + scipy.rand()*(6.0-5.0)
+    num_period = 1 #int(2.0 + scipy.rand()*(3.0 - 2.0))
     n = int(num_period*T/dt)
     A1 = scipy.rand()*(200.0 - 20.0)
     #A2 = 20.0 + scipy.rand()*(200.0 - 20.0)

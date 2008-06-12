@@ -1,0 +1,22 @@
+dev_notes.txt - borf_control development notes
+
+Will Dickson 06/12/2008 - 
+==============================================
+
+Stability problem. The current incarnation of borf_control has a
+pretty serious stability issue which causes it to hard lock
+intermintently. I'm not sure what is cuasing this - it may have
+somethine to do with shared memory usage. This set of notes has been
+started to help me keep track of my debugging effort. 
+
+A couple of ideas. 
+
+* I think the stability problem has to due with shared memory as the
+  problem typically seems to occur when access or freeing the shared
+  memory bewteen the realtime driver and the user space library. 
+
+  One thought is that I need to ue mlock on the shared memory buffers.
+  
+ 
+
+
