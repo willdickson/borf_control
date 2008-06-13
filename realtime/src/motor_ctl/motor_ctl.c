@@ -138,10 +138,10 @@ static struct buffer_str *buffer;
 static struct ain_buffer_str *ain_buffer;
 
 // Spinlocks
-SPL sys_state_spl;
-#if defined(TRIG) || defined(PWM)
-SPL trig_pwm_spl;
-#endif
+//SPL sys_state_spl;
+//#if defined(TRIG) || defined(PWM)
+//SPL trig_pwm_spl;
+//#endif
 
 // ----------------------------------------------------------------------------
 // main_task_func - main real-time task function
@@ -194,15 +194,15 @@ void pwm_task_func(long n) {
     now_ns = rt_get_time_ns();
     
     // Get required sys_state information
-    rt_spl_lock(&sys_state_spl);
+    //rt_spl_lock(&sys_state_spl);
     motor_index = sys_state.motor_index[n+NUM_STEPPER];
     pwm_zero_ns = sys_state.pwm_zero_ns[n];
-    rt_spl_unlock(&sys_state_spl);
+    //rt_spl_unlock(&sys_state_spl);
 
     // Set pwm hi
-    rt_spl_lock(&trig_pwm_spl);
+    //rt_spl_lock(&trig_pwm_spl);
     comedi_dio_write(sys_state.device, DIO_SUBDEV, pwm_dio_pins[n], DIO_HI);	
-    rt_spl_unlock(&trig_pwm_spl);
+    //rt_spl_unlock(&trig_pwm_spl);
 
     // Sleep for slightly less than pwm duration  
     pulse_ns = pwm_index2pulse_ns(pwm_zero_ns, motor_index);
@@ -219,9 +219,9 @@ void pwm_task_func(long n) {
     } while(temp_ns < (now_ns+pulse_ns));
 
     // Set pwm lo
-    rt_spl_lock(&trig_pwm_spl);
+    //rt_spl_lock(&trig_pwm_spl);
     comedi_dio_write(sys_state.device, DIO_SUBDEV, pwm_dio_pins[n], DIO_LO);	
-    rt_spl_unlock(&trig_pwm_spl);
+    //rt_spl_unlock(&trig_pwm_spl);
 
     // Sleep until next cycle 
     now_ns += (PWM_PERIOD_NS);
@@ -252,7 +252,7 @@ RTIME pwm_index2pulse_ns(int pwm_zero_ns, int ind)
 void init_sys_state(void)
 {
   int i;
-  rt_spl_lock(&sys_state_spl);
+  //rt_spl_lock(&sys_state_spl);
   sys_state.outscan = OFF;          
   sys_state.standby = ON;
   sys_state.enable = OFF;
@@ -283,7 +283,7 @@ void init_sys_state(void)
     sys_state.pwm_zero_ns[i] = (PWM_MAX_PULSE_NS+PWM_MIN_PULSE_NS)/2;
   }
 #endif
-  rt_spl_unlock(&sys_state_spl);
+  //rt_spl_unlock(&sys_state_spl);
   return;
 }
 
@@ -297,14 +297,14 @@ void init_sys_state(void)
 void init_trig_state(void)
 {
   int i;
-  rt_spl_lock(&trig_pwm_spl);
+  //rt_spl_lock(&trig_pwm_spl);
   for (i=0; i<NUM_TRIG; i++){
     trig_state.index[i] = -1;
     trig_state.status[i] = OFF;
     trig_state.count[i] = 0;
     trig_state.width[i] = DFLT_TRIG_WIDTH;
   }
-  rt_spl_unlock(&trig_pwm_spl);
+  //rt_spl_unlock(&trig_pwm_spl);
   return;
 }
 #endif
@@ -323,11 +323,11 @@ void send_triggers(void)
   //char trig_bits = 0x0;
   
   // Get buffer position
-  rt_spl_lock(&sys_state_spl);
+  //rt_spl_lock(&sys_state_spl);
   buffer_pos = sys_state.buffer_pos;
-  rt_spl_unlock(&sys_state_spl);
+  //rt_spl_unlock(&sys_state_spl);
 
-  rt_spl_lock(&trig_pwm_spl);
+  //rt_spl_lock(&trig_pwm_spl);
   //trig_bits = inb(TRIG_PWM_PORT);
   for (i=0; i<NUM_TRIG; i++) {
     
@@ -352,7 +352,7 @@ void send_triggers(void)
     }
   }
   //outb(trig_bits,TRIG_PWM_PORT);
-  rt_spl_unlock(&trig_pwm_spl);
+  //rt_spl_unlock(&trig_pwm_spl);
 
   return;
 }
@@ -374,7 +374,7 @@ void send_motor_cmds(void)
   char para_out;
   static int temp[NUM_CLKDIR];
   
-  rt_spl_lock(&sys_state_spl);
+  //rt_spl_lock(&sys_state_spl);
   if (sys_state.outscan == ON) {      
 
     // Loop over all motors - steppers and pwm motors
@@ -486,7 +486,7 @@ void send_motor_cmds(void)
     }
 
   } // end if (outscan==ON) 
-  rt_spl_unlock(&sys_state_spl);
+  //rt_spl_unlock(&sys_state_spl);
 
   return;
 } // end send_motor_cmds 
@@ -516,7 +516,7 @@ void acquire_data(void)
 {
   int i;
   
-  rt_spl_lock(&sys_state_spl);
+  //rt_spl_lock(&sys_state_spl);
   // Acquire data
   if (sys_state.buffer==OS_BUFFER) {
     for(i=0; i<NUM_AIN; i++) {
@@ -528,7 +528,7 @@ void acquire_data(void)
 		       );
     }
   }
-  rt_spl_unlock(&sys_state_spl);
+  //rt_spl_unlock(&sys_state_spl);
 }
 
 
@@ -543,7 +543,7 @@ void set_status_info()
 {
   int i;
 
-  rt_spl_lock(&sys_state_spl);
+  //rt_spl_lock(&sys_state_spl);
   status_info -> freq = 1.0/((1.0e-9)*(float)PERIOD_NS);
   status_info -> outscan = sys_state.outscan;
   status_info -> standby = sys_state.standby;
@@ -571,16 +571,16 @@ void set_status_info()
     status_info -> pwm_zero_ns[i] = sys_state.pwm_zero_ns[i];
   }
 #endif
-  rt_spl_unlock(&sys_state_spl);
+  //rt_spl_unlock(&sys_state_spl);
     
 #ifdef TRIG
   // Copy trigger information
-  rt_spl_lock(&trig_pwm_spl);
+  //rt_spl_lock(&trig_pwm_spl);
   for(i=0; i<NUM_TRIG; i++) {
     status_info -> trig_index[i] = trig_state.index[i];
     status_info -> trig_width[i] = trig_state.width[i];
   }
-  rt_spl_unlock(&trig_pwm_spl);
+  //rt_spl_unlock(&trig_pwm_spl);
 #endif
   
   return;
@@ -655,13 +655,13 @@ int cmd_handler(unsigned int fifo, int rw)
     switch(cmd) {
     
     case CMD_STOP:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.outscan = OFF;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_START:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       
       // Select buffer
       if (sys_state.buffer==OS_BUFFER) {
@@ -677,69 +677,69 @@ int cmd_handler(unsigned int fifo, int rw)
 	}
 	sys_state.outscan = ON;
       }
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_UNLOCK_BUFFER:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       if (sys_state.outscan==OFF) {
 	sys_state.buffer_lock = OFF;
       }
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_LOCK_BUFFER:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.buffer_lock = ON;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_ZERO_BUFFER_POS:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       if (sys_state.outscan==OFF) {
 	sys_state.buffer_pos = 0;
       }
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_STANDBY_ON:
       port_data = inb(CTRLPORT);
       port_data = port_data & MASK_STANDBY_ON;
       outb(port_data,CTRLPORT);
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.standby = ON;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_STANDBY_OFF:      
       port_data = inb(CTRLPORT);
       port_data = port_data | MASK_STANDBY_OFF;
       outb(port_data,CTRLPORT);
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.standby = OFF;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
       
     case CMD_ENABLE:
       port_data = inb(CTRLPORT);
       port_data = port_data | MASK_ENABLE;
       outb(port_data,CTRLPORT);
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.enable = ON;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_DISABLE:
       port_data = inb(CTRLPORT);
       port_data = port_data & MASK_DISABLE;
       outb(port_data,CTRLPORT);
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.enable = OFF;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_ZERO_MOTOR_IND:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       if (sys_state.outscan==OFF) {
 #ifdef PWM
 	// Get pulse width for zero index
@@ -754,19 +754,19 @@ int cmd_handler(unsigned int fifo, int rw)
 	  sys_state.motor_index[i] = 0;
 	}
       }
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_LOOPMODE_ON:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.loop_mode=ON;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_LOOPMODE_OFF:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       sys_state.loop_mode=OFF;
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
 #ifdef TRIG
@@ -774,41 +774,41 @@ int cmd_handler(unsigned int fifo, int rw)
       msg_sz = rtf_get(FIFO_COMMAND, &data, 2*sizeof(int)); 
       trig_num = data[0];
       trig_ind = data[1];
-      rt_spl_lock(&trig_pwm_spl);
+      //rt_spl_lock(&trig_pwm_spl);
       if (trig_num>=0 && trig_num<NUM_TRIG) {
 	trig_state.index[trig_num] = trig_ind; 
       }
-      rt_spl_unlock(&trig_pwm_spl);
+      //rt_spl_unlock(&trig_pwm_spl);
       break;
 
     case CMD_SET_TRIG_WIDTH:
       msg_sz = rtf_get(FIFO_COMMAND, &data, 2*sizeof(int)); 
       trig_num = data[0];
       trig_wid = data[1];
-      rt_spl_lock(&trig_pwm_spl);
+      //rt_spl_lock(&trig_pwm_spl);
       if (trig_num>=0 && trig_num<NUM_TRIG) {
 	trig_state.width[trig_num] = trig_wid; 
       }
-      rt_spl_unlock(&trig_pwm_spl);
+      //rt_spl_unlock(&trig_pwm_spl);
       break;
 #endif
 
     case CMD_SET_OS_BUFFER:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       if ((sys_state.buffer_lock==OFF) &&(sys_state.outscan==OFF)) {
 	sys_state.buffer = OS_BUFFER;
 	sys_state.buffer_pos = 0;
       }
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
 
     case CMD_SET_MV_BUFFER:
-      rt_spl_lock(&sys_state_spl);
+      //rt_spl_lock(&sys_state_spl);
       if ((sys_state.buffer_lock==OFF) && (sys_state.outscan==OFF)) {
 	sys_state.buffer = MV_BUFFER;
 	sys_state.buffer_pos = 0;
       }
-      rt_spl_unlock(&sys_state_spl);
+      //rt_spl_unlock(&sys_state_spl);
       break;
     } 
   } 
@@ -884,9 +884,9 @@ static int __motor_ctl_init(void)
   }
 
   // Intialize spinlocks
-  rt_spl_init(&sys_state_spl);
+  //rt_spl_init(&sys_state_spl);
 #if defined(TRIG) || defined(PWM)
-  rt_spl_init(&trig_pwm_spl);
+  //rt_spl_init(&trig_pwm_spl);
 #endif 
 
   // Allocate shared memory for outscan buffer 
@@ -1003,9 +1003,9 @@ static void __motor_ctl_exit(void)
   rtf_destroy(FIFO_COMMAND);
 
   // Destroy spinlocks
-  rt_spl_delete(&sys_state_spl);
+  //rt_spl_delete(&sys_state_spl);
 #if defined(TRIG) || defined(PWM)
-  rt_spl_delete(&trig_pwm_spl);
+  //rt_spl_delete(&trig_pwm_spl);
 #endif 
 
   // Free shared memory 

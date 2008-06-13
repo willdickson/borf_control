@@ -1,7 +1,7 @@
 dev_notes.txt - borf_control development notes
 
 Will Dickson 06/12/2008 - 
-==============================================
+=======================================================================
 
 Stability problem. The current incarnation of borf_control has a
 pretty serious stability issue which causes it to hard lock
@@ -45,22 +45,6 @@ A couple of ideas.
   in motor_shm.c as the rtai documentation and example seem to suggest
   they are required. 
 
-------------------------------------------------------------------------
-
-* Looking at cmd2motor_ctl set-os-buffer. 
-
-  Could there be a race condition in motor_ctl.c? I can't see anything
-  obvious. 
-
-  Action: 
-  
-  Try removing all spinlocks and see what happens. This could mess up
-  the behavior of the system in and of itself, but it should get into
-  a race condition. I just might be that some of the variables are
-  garbage when they are accessed. 
-
-  Result:
-  
 
 -------------------------------------------------------------------------
 
@@ -72,6 +56,32 @@ A couple of ideas.
   buffers after allocation and a munlock before freeing them.
    
   Result:
+  
+  Hard-lock on 73rd kinematic pattren using stress.py. Last debug
+  command was cmd2motor_ctl unlock-buffer. Again it is unclear why
+  this is occuring. Examine motor_ctl.c code for fifo command and fifo
+  code in motor_comm. Could the fifo be the problem? What about
+  locking the memory in the kernel modules? is that necessary?
+
+  Note, I'm going to keep the mlocks in the code as they don't seem to
+  hurt anything. 
+
+------------------------------------------------------------------------
+
+* Looking at cmd2motor_ctl set-os-buffer. 
+
+  Could there be a race condition in motor_ctl.c? I can't see anything
+  obvious. 
+
+  Action: 
+  
+  Try removing all spinlocks and see what happens. This could mess up
+  the behavior of the system in and of itself, but it should not get
+  into a race condition -  it just might be that some of the variables
+  are garbage when they are accessed though. 
+
+  Result:
+  
 
 -------------------------------------------------------------------------
 
