@@ -2,16 +2,19 @@ dev_notes.txt - borf_control development notes
 
 Will Dickson 06/12/2008 - 
 =======================================================================
+ 
+Stability problem. 
+==================
 
-Stability problem. The current incarnation of borf_control has a
-pretty serious stability issue which causes it to hard lock
-intermittently. I'm not sure what is causing this - it may have
-something to do with shared memory usage. This set of notes has been
-started to help me keep track of my debugging effort. 
+The current incarnation of borf_control has a pretty serious stability
+issue which causes it to hard lock intermittently. I'm not sure what
+is causing this - it may have something to do with shared memory
+usage. This set of notes has been started to help me keep track of my
+debugging effort.
 
 A couple of ideas. 
 
-* I think the stability problem has to due with shared memory as the
+  I think the stability problem has to due with shared memory as the
   problem typically seems to occur when access or freeing the shared
   memory between the realtime driver and the user space library. 
 
@@ -91,12 +94,19 @@ A couple of ideas.
   
 -------------------------------------------------------------------------
 
+* Assuming that the stability problem was a race condition I now need
+  to figure out the best way to deal with it. Need to look through the
+  real time code and figure out what the concurrancy issues are and
+  how best to deal with them. RTAI offers a host of mechanisms for
+  dealing with concurrancy - I'll need to spend a little time looking
+  through them to figure out what might be the best approach. 
 
 
 
 
 
-May not be needed.
+
+Other ideas -- May not be needed.
 --------------------------------------------------------------------------
 
 * Is it a shared memory access the problem?
