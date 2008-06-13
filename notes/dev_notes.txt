@@ -68,10 +68,11 @@ A couple of ideas.
 
 ------------------------------------------------------------------------
 
-* Looking at cmd2motor_ctl set-os-buffer. 
+* Race condition?
 
   Could there be a race condition in motor_ctl.c? I can't see anything
-  obvious. 
+  obvious. But I'm making pretty heavy use of spinlocks which could be
+  bad.
 
   Action: 
   
@@ -81,11 +82,24 @@ A couple of ideas.
   are garbage when they are accessed though. 
 
   Result:
-  
 
+  Made it through stress.py w/ number of tests = 200. I think (hope)
+  that this was the problem. It appears that that maybe I did have a
+  race condition through my use of spinlocks. I'll need to rexamine
+  motor_ctl.c and see if I can find another way to deal with the
+  concurrancy issues.
+  
 -------------------------------------------------------------------------
 
-* Is shared memory access the problem
+
+
+
+
+
+May not be needed.
+--------------------------------------------------------------------------
+
+* Is it a shared memory access the problem?
 
   Action: 
 
