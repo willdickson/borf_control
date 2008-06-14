@@ -41,17 +41,17 @@ MODULE_LICENSE("None");
 struct sys_state_str
 {
   RT_TASK main_task;
-  int outscan;
-  int standby;
-  int enable;
-  int buffer_lock;
-  int buffer_pos;
-  int motor_index[NUM_MOTOR];
-  int motor_type[NUM_MOTOR];
-  int loop_mode;
-  int buffer;
+  volatile int outscan;
+  volatile int standby;
+  volatile int enable;
+  volatile int buffer_lock;
+  volatile int buffer_pos;
+  volatile int motor_index[NUM_MOTOR];
+  volatile int motor_type[NUM_MOTOR];
+  volatile int loop_mode;
+  volatile int buffer;
   comedi_t *device;
-  lsampl_t ain_data[NUM_AIN];
+  volatile lsampl_t ain_data[NUM_AIN];
 };
 
 // Trigger state structure

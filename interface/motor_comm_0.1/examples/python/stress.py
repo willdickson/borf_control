@@ -20,7 +20,7 @@ num_motor = comm.num_motor()
 num_trial = 200
 for i in range(0,num_trial):
     
-    T = 3.0 # + scipy.rand()*(6.0-5.0)
+    T = 4.0 # + scipy.rand()*(6.0-5.0)
     num_period = 1 #int(2.0 + scipy.rand()*(3.0 - 2.0))
     n = int(num_period*T/dt)
     A1 = scipy.rand()*(200.0 - 20.0)
@@ -31,7 +31,7 @@ for i in range(0,num_trial):
     t = scipy.arange(0.0,n)*dt
     x = scipy.zeros((n,num_motor))
     
-    x[:,0] = A1*scipy.cos(2.0*scipy.pi*t/T) #+ A2*scipy.cos(4.0*scipy.pi*t/T)
+    x[:,1] = A1*scipy.cos(2.0*scipy.pi*t/T) #+ A2*scipy.cos(4.0*scipy.pi*t/T)
     x[:,2] = 30.0*scipy.cos(2.0*scipy.pi*t/T) #+ A2*scipy.cos(4.0*scipy.pi*t/T)
 
     print 'loading outscan buffer'
