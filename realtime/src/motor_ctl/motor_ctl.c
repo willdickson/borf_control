@@ -58,10 +58,10 @@ struct sys_state_str
 #ifdef TRIG
 struct trig_state_str
 {
-  int index[NUM_TRIG];
-  int status[NUM_TRIG];
-  int count[NUM_TRIG];
-  int width[NUM_TRIG];
+  volatile int index[NUM_TRIG];
+  volatile int status[NUM_TRIG];
+  volatile int count[NUM_TRIG];
+  volatile int width[NUM_TRIG];
 };
 #endif
 
