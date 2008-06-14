@@ -137,6 +137,7 @@ void main_task_func(long arg) {
     send_motor_cmds();
     set_status_info();
 
+    // Sleep for a bit and then set the clks low
     rt_sleep_until(nano2count(rt_get_time_ns() + CLK_HI_TIME));
     set_clk_low(); 
 
@@ -497,6 +498,8 @@ int cmd_handler(unsigned int fifo, int rw)
   int trig_ind = 0;
   int trig_wid = 0;
 #endif
+
+  //rt_printk("motor_ctl: begin cmd_handler\n");
   
   if (rw=='r') {
     // On read - we shouldn't get any of these
@@ -612,9 +615,9 @@ int cmd_handler(unsigned int fifo, int rw)
       break;
     } 
   } 
+  //rt_printk("motor_ctl: end cmd_handler\n");
   return 0;
 }
-
 
 // -----------------------------------------------------------------------
 // __motor_ctl_init - kernel module initialization function 

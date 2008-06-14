@@ -105,7 +105,8 @@ A couple of ideas.
   What shared data structures do we have, who shares them, and how are
   they shared?
   
-  Shared structures: sys_state, mv_buffer, os_buffer, trig_state
+  Shared structures: sys_state, mv_buffer, os_buffer, ain_buffer,
+  trig_state
 
   Since the shared use of mv_buffer, os_buffer ans trig_state is
   limited. I'm going to focus on the sys_state data structure. It is
@@ -124,14 +125,14 @@ A couple of ideas.
     
                                        RT task          cmd_handler
                                                    
-    RT_TASK main_taks              |      r        |        -
+    RT_TASK main_task              |      r        |        -
     int outscan                    |      rw       |        rw
-    int standby                    |      r        |        rw
-    int enable                     |      r        |        rw
-    int buffer_lock                |      r        |        rw
+    int standby                    |      -        |        rw
+    int enable                     |      -        |        rw
+    int buffer_lock                |      -        |        rw
     int buffer_pos                 |      rw       |        rw
-    int motor_index[NUM_MOTOR]	   |      rw       |        -
-    int motor_type[NUM_MOTOR]      |      r        |        r
+    int motor_index[NUM_MOTOR]	   |      rw       |        rw
+    int motor_type[NUM_MOTOR]      |      r        |        -
     int loop_mode                  |      r        |        rw
     int buffer                     |      r        |        w
     comedi_t *device               |      r        |        -
@@ -143,9 +144,30 @@ A couple of ideas.
   moving the functionality over to th RT task. Many of the fields are
   just integers (and could be single bits). 
 
+  Notes, we only have to worry about the RT task prempting the
+  cmd_handler. Where could this cause problems? As far as I can tell
+  there aren't really any problem areas. Maybe I don't really need to
+  do anything? First, there doesn't seem to be anything really bad
+  which can happen if there is an inconsistent data view. Mostly this
+  is an issue with the outscan field, but the outscan field is an int
+  so that changes to it should be atomic.  There are no issues with
+  standy, enable, or buffer_lock. buffer_pos can only be changed (set
+  to zero) when outscan is set to OFF. Similarly, the motor_index
+  values can only be changed when when outscan is off. loop_made and
+  buffer are not an issue. And thats it. 
 
+  So the only possible issues are w/ buffer_pos and motor_index. These
+  would only be a problem if you could change these when outscan was
+  ON. 
 
+  So, I don't think we have any problems ...
 
+  mv_buffer and os_buffer are read only on the RT task side.   
+
+  ain_buffer is write only on the RT task side and read only on the
+  linux user space side. 
+
+  
 ==========================================================================
 
 Other ideas -- May not be needed.
