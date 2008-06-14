@@ -92,9 +92,6 @@ int id_cmd_set_mv_buffer()
 int stepper_motor()
 {return STEPPER_MOTOR;}
 
-int pwm_motor()
-{return PWM_MOTOR;}
-
 int clkdir_motor()
 {return CLKDIR_MOTOR;}
 
@@ -167,44 +164,6 @@ int has_trigger()
   return 0;
 #endif
 }
-
-int has_pwm()
-{
-#ifdef PWM
-  return 1;
-#else
-  return 0;
-#endif
-}
-
-int has_clkdir()
-{
-#ifdef CLKDIR
-  return 1;
-#else
-  return 0;
-#endif
-}
-
-#ifdef PWM
-int num_pwm()
-{return NUM_PWM;}
-
-int pwm_min_pulse_ns()
-{return PWM_MIN_PULSE_NS;}
-
-int pwm_max_pulse_ns()
-{return PWM_MAX_PULSE_NS;}
-
-int pwm_period_ns()
-{return PWM_PERIOD_NS;}
-
-int pwm_num_index()
-{return PWM_NUM_INDEX;}
-
-int pwm_ns_per_index()
-{return PWM_NS_PER_INDEX;}
-#endif
 
 // -----------------------------------------------------------------------
 // shm_alloc - allocates shared memory buffers w/ motor_ctl driver. 
@@ -586,10 +545,6 @@ int get_status_info(struct status_info_str *status_info)
 
   // Copy status info 
   *status_info = *status_info_shm;
-
-  //#ifdef DEBUG
-  //printf("\t    *done\n");
-  //#endif
 
   return SUCCESS;
 }

@@ -12,10 +12,11 @@
 #include <rtai_nam2num.h>
 #include <rtai_rwl.h>
 
-// Currently TRIG and PWM options cannot be used with CLKDIR options
-#if defined(CLKDIR) && ( defined(PWM) || defined(TRIG))
-#error CLKDIR option cannnot be used with PWM ot TRIG options 
+// Currently TRIG option is broken
+#if defined(TRIG)
+#error TRIG option is currently broken
 #endif
+
 
 // FIFO IDs 
 #define FIFO_COMMAND 0
@@ -61,7 +62,6 @@
 #define ON 1
 #define OFF 0
 #define STEPPER_MOTOR 0
-#define PWM_MOTOR 1
 #define CLKDIR_MOTOR 2
 #define OS_BUFFER 0
 #define MV_BUFFER 1
@@ -73,14 +73,12 @@
 #define IND_PER_REV 400
 
 // Clock and Direction constants
-#ifdef CLKDIR
 #define NUM_CLKDIR 2
 #define CLK_HI_TIME 50000
 #define CLK_DIO_PINS {0,2}
 #define DIR_DIO_PINS {1,3}
 #define DIR_POS 1
 #define DIR_NEG 0
-#endif
 
 // Trigger constants
 #ifdef TRIG
@@ -88,37 +86,8 @@
 #define DFLT_TRIG_WIDTH 20
 #endif 
 
-// PWM constants
-#if defined(TRIG) && defined(PWM)
-#define NUM_PWM (8-NUM_TRIG)
-#elif defined(PWM)
-#define NUM_PWM 8
-#endif
-#ifdef PWM
-#define PWM_MIN_PULSE_NS 900000 
-#define PWM_MAX_PULSE_NS 2100000
-#define PWM_EARLY_NS 10000
-#define PWM_PERIOD_NS 20000000
-#define PWM_NUM_INDEX 800
-#define PWM_NS_PER_INDEX ((PWM_MAX_PULSE_NS-PWM_MIN_PULSE_NS )/(PWM_NUM_INDEX-1))
-#endif
-
-// Need to change code so that pwm works with CLKDIR
-#if defined(PWM) && !defined(CLKDIR)
-#define NUM_MOTOR (NUM_STEPPER+NUM_PWM) 
-#endif
-
-#if defined(CLKDIR) && !defined(PWM)
 #define NUM_MOTOR (NUM_STEPPER+NUM_CLKDIR)
-#endif
 
-#if defined(PWM) && defined(CLKDIR)
-#define NUM_MOTOR (NUM_STEPPER+NUM_CLKDIR+NUM_PWM)
-#endif
-
-#if !defined(PWM) && !defined(CLKDIR)
-#define NUM_MOTOR NUM_STEPPER
-#endif
 
 
 // Status info struture 
@@ -145,10 +114,6 @@ struct status_info_str
   int trig_index[NUM_TRIG];
   int trig_width[NUM_TRIG];
 #endif
-#ifdef PWM
-  int pwm_zero_ns[NUM_PWM];
-#endif
-
 };
 
 // Outscan buffer structure 

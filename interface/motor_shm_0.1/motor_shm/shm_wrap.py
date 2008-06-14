@@ -20,8 +20,6 @@ def debug_print(msg):
 libmotor_shm = ctypes.cdll.LoadLibrary("libmotor_shm.so.1")
 
 has_trigger = libmotor_shm.has_trigger
-has_pwm = libmotor_shm.has_pwm
-has_clkdir = libmotor_shm.has_clkdir
 
 # Command ID functions
 id_cmd_fifo = libmotor_shm.id_cmd_fifo
@@ -49,15 +47,6 @@ if has_trigger():
     num_trigger = libmotor_shm.num_trigger
     dflt_trigger_width = libmotor_shm.dflt_trigger_width
 
-# Commands included only if pwm exists
-if has_pwm():
-    num_pwm = libmotor_shm.num_pwm
-    pwm_min_pulse_ns = libmotor_shm.pwm_min_pulse_ns
-    pwm_max_pulse_ns = libmotor_shm.pwm_min_pulse_ns
-    pwm_period_ns = libmotor_shm.pwm_period_ns
-    pwm_num_index = libmotor_shm.pwm_num_index
-    pwm_ns_per_index = libmotor_shm.pwm_ns_per_index
-    
 # Functions which return other constants
 num_stepper = libmotor_shm.num_stepper
 num_motor = libmotor_shm.num_motor
@@ -120,8 +109,8 @@ shm_free = libmotor_shm.shm_free
 def get_motor_type(type_num):
     if type_num == libmotor_shm.stepper_motor():
         return 'step'
-    elif type_num == libmotor_shm.pwm_motor():
-        return 'pwm'
+    #elif type_num == libmotor_shm.pwm_motor():
+    #    return 'pwm'
     elif type_num == libmotor_shm.clkdir_motor():
         return 'clkdir'
     else:
@@ -153,26 +142,14 @@ class status_info_cstr(ctypes.Structure):
             ('trig_width', ctypes.c_int*num_trigger()),
             ]
         _fields_.extend(trig_fields)
-    if has_pwm()==1:
-        pwm_fields = [
-            ('pwm_zero_ns', ctypes.c_int*num_pwm()),
-            ]
-        _fields_.extend(pwm_fields)
-
-    # Debug ---------------------------------------------------
-    #debug = [
-    #        ('debug', ctypes.c_int),
-    #        ]
-    #_fields_.extend(debug)
-    # ---------------------------------------------------------
 
 def get_status_info():
     debug_print('get_status_info')
     status_info = status_info_cstr()
     p_status_info = ctypes.pointer(status_info)
-    debug_print('in of libmotor_shm.get_status_info(p_status_info)')   # temporary
+    #debug_print('in of libmotor_shm.get_status_info(p_status_info)')   # temporary
     flag = libmotor_shm.get_status_info(p_status_info)
-    debug_print ('out of libmotor_shm.get_status_info(p_status_info)') # temporary
+    #debug_print ('out of libmotor_shm.get_status_info(p_status_info)') # temporary
     if flag == error_malloc():
         raise MemoryError, 'failed to allocate shared memory buffer'
     status_info_dict = {}
