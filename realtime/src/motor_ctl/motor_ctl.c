@@ -128,7 +128,6 @@ void main_task_func(long arg) {
   
   RTIME now_ns;
 
-
   for (;;) {
     now_ns = rt_get_time_ns();
 #ifdef TRIG
@@ -251,6 +250,7 @@ void send_motor_cmds(void)
   int i,j;
   static int motor_step_pos[NUM_STEPPER]; // inititalized to zeros because static
   static int motor_start_pos[NUM_MOTOR];  // ditto
+  static int last_outscan_state = OFF;
   int sys_index_rel = 0;
   int buf_index_0 = 0;
   int buf_index_rel = 0;
@@ -262,14 +262,22 @@ void send_motor_cmds(void)
     // Loop over all motors - steppers and pwm motors
     for (i=0;i<NUM_MOTOR;i++){
 
-      // Select buffer
+      // Select buffer to outscan
       if (sys_state.buffer==OS_BUFFER) {
 	buffer = os_buffer;
       }
       else {
 	buffer = mv_buffer;
       }
-      
+
+      // Has the outscan been turned on after being off  -  buffer could have been changed
+      // length. Check and set buffer pos to zero if outside of range.
+      if (last_outscan_state == OFF) {
+	if (sys_state.buffer_pos >= buffer->len) {
+	  sys_state.buffer_pos = 0;
+	}
+      }
+            
       // Are we srarting from the begining of the buffer ? 
       // If so get relative motor position reset the analog input buffer position 
       // if this is an outscan.
@@ -365,6 +373,8 @@ void send_motor_cmds(void)
     }
 
   } // end if (outscan==ON) 
+
+  last_outscan_state = sys_state.outscan;
   
   return;
 } // end send_motor_cmds 
@@ -502,18 +512,7 @@ int cmd_handler(unsigned int fifo, int rw)
       break;
 
     case CMD_START:
-      // Select buffer
-      if (sys_state.buffer==OS_BUFFER) {
-	cur_buffer = os_buffer;
-      }
-      else {
-	cur_buffer = mv_buffer;
-      }
-      // Start outscan
-      if ((sys_state.buffer_lock==ON) && (cur_buffer->len>0)) {
-	if (sys_state.buffer_pos >= cur_buffer->len) {
-	  sys_state.buffer_pos = 0;
-	}
+      if ( (sys_state.outscan==OFF) && (sys_state.buffer_lock==ON)) {
 	sys_state.outscan = ON;
       }
       break;
@@ -600,15 +599,15 @@ int cmd_handler(unsigned int fifo, int rw)
 
     case CMD_SET_OS_BUFFER:
       if ((sys_state.buffer_lock==OFF) &&(sys_state.outscan==OFF)) {
-	sys_state.buffer = OS_BUFFER;
 	sys_state.buffer_pos = 0;
+	sys_state.buffer = OS_BUFFER;
       }
       break;
 
     case CMD_SET_MV_BUFFER:
       if ((sys_state.buffer_lock==OFF) && (sys_state.outscan==OFF)) {
-	sys_state.buffer = MV_BUFFER;
 	sys_state.buffer_pos = 0;
+	sys_state.buffer = MV_BUFFER;
       }
       break;
     } 

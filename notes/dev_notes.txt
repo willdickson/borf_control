@@ -105,11 +105,43 @@ A couple of ideas.
   What shared data structures do we have, who shares them, and how are
   they shared?
   
-  shared structures: sys_state, 
+  Shared structures: sys_state, mv_buffer, os_buffer, trig_state
+
+  Since the shared use of mv_buffer, os_buffer ans trig_state is
+  limited. I'm going to focus on the sys_state data structure. It is
+  used by both the RT task (we only have one of these) and the command
+  fifo handler cmd_handler which is a linux kernel task. Because
+  cmd_handler is a linux kernel task, it can never interrupt execution
+  the RT task (when not sleeping), however the RT task could and
+  probably does preempt the cmd_handler on occasion. We need to ensure
+  - without breaking realtime - that the RT task alway has a consitent
+  view of sys_state.
+
+  Overview of sys_state structure and shared items
+  
+    sys_state fields                       sharing
+    ------------------------------------------------------------
+    
+                                       RT task          cmd_handler
+                                                   
+    RT_TASK main_taks              |      r        |        -
+    int outscan                    |      rw       |        rw
+    int standby                    |      r        |        rw
+    int enable                     |      r        |        rw
+    int buffer_lock                |      r        |        rw
+    int buffer_pos                 |      rw       |        rw
+    int motor_index[NUM_MOTOR]	   |      rw       |        -
+    int motor_type[NUM_MOTOR]      |      r        |        r
+    int loop_mode                  |      r        |        rw
+    int buffer                     |      r        |        w
+    comedi_t *device               |      r        |        -
+    lsampl_t ain_data[NUM_AIN]     |      rw       |        -
 
 
-
-
+  We have a number of fields which are shared between the RT task and
+  the cmd_handler. One thought is to eliminate some of this sharing by
+  moving the functionality over to th RT task. Many of the fields are
+  just integers (and could be single bits). 
 
 
 
