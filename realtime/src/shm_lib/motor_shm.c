@@ -11,7 +11,7 @@
 #include <sys/mman.h>
 #include "motor_ctl.h"
 
-#define DEBUG
+//#define DEBUG
 #define SUCCESS 0
 #define FAIL -1
 #define ERROR_LOCKED -2
