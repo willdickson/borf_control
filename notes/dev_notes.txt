@@ -102,9 +102,19 @@ A couple of ideas.
   through them to figure out what might be the best approach. 
 
 
+  What shared data structures do we have, who shares them, and how are
+  they shared?
+  
+  shared structures: sys_state, 
 
 
 
+
+
+
+
+
+==========================================================================
 
 Other ideas -- May not be needed.
 --------------------------------------------------------------------------

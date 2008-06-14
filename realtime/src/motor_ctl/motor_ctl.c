@@ -128,11 +128,7 @@ void main_task_func(long arg) {
   
   RTIME now_ns;
 
-  // Initialize system state and triggers 
-  init_sys_state();
-#ifdef TRIG
-  init_trig_state();
-#endif
+
   for (;;) {
     now_ns = rt_get_time_ns();
 #ifdef TRIG
@@ -721,6 +717,12 @@ static int __motor_ctl_init(void)
   for (i=0; i<NUM_TRIG; i++){
     comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
   }
+#endif
+
+  // Initialize system state and triggers 
+  init_sys_state();
+#ifdef TRIG
+  init_trig_state();
 #endif
 
   // Start up the rt tasks  
