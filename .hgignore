@@ -10,3 +10,4 @@ syntax: glob
 *.symvers
 *.mod
 *.so.*
+*.egg

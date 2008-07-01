@@ -10,6 +10,7 @@ max_cnt=5
 comedi_dev=/dev/comedi0
 unamer=$(uname -r)
 rtai_dir=/usr/realtime/modules/
+daq_card_driver=cb_pcidas
 
 
 # Wait until udev configure comedi device or we reach max count
@@ -48,9 +49,9 @@ function start_motor_ctl {
     sudo modprobe comedi
     sudo modprobe kcomedilib
     sudo insmod ${rtai_dir}rtai_comedi.ko
-    sudo modprobe ni_pcimio
+    sudo modprobe ${daq_card_driver}
     waitfor_comedi_dev # Wait for udev device configuration 
-    sudo comedi_config $comedi_dev ni_pcimio 
+    sudo comedi_config $comedi_dev $daq_card_driver 
     waitfor_rtf0
     sudo insmod /usr/local/lib/modules/$unamer/motor_ctl.ko
     echo "done"
@@ -60,7 +61,7 @@ function start_motor_ctl {
 function stop_motor_ctl {
     echo stopping motor_ctl
     sudo rmmod motor_ctl
-    sudo modprobe -r ni_pcimio
+    sudo modprobe -r $daq_card_driver
     sudo rmmod rtai_comedi
     sudo modprobe -r kcomedilib
     sudo modprobe -r comedi
