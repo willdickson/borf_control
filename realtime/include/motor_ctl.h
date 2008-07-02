@@ -6,7 +6,6 @@
 // Author: Will Dickson 
 //
 // --------------------------------------------------------------------------
-
 #include <rtai.h>
 #include <rtai_shm.h>
 #include <rtai_nam2num.h>
@@ -16,7 +15,6 @@
 #if defined(TRIG)
 #error TRIG option is currently broken
 #endif
-
 
 // FIFO IDs 
 #define FIFO_COMMAND 0
@@ -87,8 +85,6 @@
 #endif 
 
 #define NUM_MOTOR (NUM_STEPPER+NUM_CLKDIR)
-
-
 
 // Status info struture 
 struct status_info_str 

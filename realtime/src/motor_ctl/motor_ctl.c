@@ -119,7 +119,6 @@ static struct buffer_str *mv_buffer;
 static struct buffer_str *buffer;
 static struct ain_buffer_str *ain_buffer;
 
-
 // ----------------------------------------------------------------------------
 // main_task_func - main real-time task function
 //
@@ -622,6 +621,10 @@ int cmd_handler(unsigned int fifo, int rw)
 // -----------------------------------------------------------------------
 // __motor_ctl_init - kernel module initialization function 
 //
+//
+// Need to handle initialization failure better. Upon failure need to 
+// unregister all registered objects and exit with an error code.
+//
 // -----------------------------------------------------------------------
 static int __motor_ctl_init(void)
 {
@@ -638,6 +641,7 @@ static int __motor_ctl_init(void)
   sys_state.device = comedi_open(COMEDI_DEV);
   if (sys_state.device==0) {
     printk("motor_ctl: unable to open comedi device\n");
+    return -ENODEV;
   }
   comedi_lock(sys_state.device,AIN_SUBDEV); // This is a bit brutal
 
@@ -695,7 +699,7 @@ static int __motor_ctl_init(void)
     printk ("motor_ctl: can't allocate shared memory for ain buffer\n");
     return -ENOMEM;
   }
-
+  
   // Start timer and initialize main rt task 
   rt_set_oneshot_mode(); 
   start_rt_timer(0); 

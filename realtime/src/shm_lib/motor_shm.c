@@ -7,7 +7,8 @@
   Author: Will Dicksom
 --------------------------------------------------------------------*/
 #include <stdio.h>
-#include <rtai_comedi.h>
+//#include <rtai_comedi.h>
+#include <user_comedilib.h>
 #include <sys/mman.h>
 #include "motor_ctl.h"
 
@@ -20,12 +21,15 @@
 #define ERROR_MLOCK -5
 #define ERROR_MUNLOCK  -6
 #define ERROR_FREE -7
+#define ERROR_AIN_SIZE -8;
 
 // Shared memory buffers
 static struct buffer_str *os_buffer_shm;
 static struct buffer_str *mv_buffer_shm;      
 static struct status_info_str *status_info_shm;
 static struct ain_buffer_str *ain_buffer_shm;
+
+const int ain_chan[NUM_AIN] = AIN_CHAN;      
 
 int shm_alloc(void);
 int shm_free(void);
@@ -34,6 +38,16 @@ int read_os_buffer(void *data, int nrow, int ncol, int s0, int s1);
 int read_os_buffer_1st(void *data, int n, int s);
 int get_status_info(struct status_info_str *status_info);
 int load_buffer(int buff_type, void *data, int nrow, int ncol, int s0, int s1);
+int convert2phys(
+		 void *d_data, 
+		 void *i_data, 
+		 int nrow, 
+		 int ncol, 
+		 int d_data_s0, 
+		 int d_data_s1, 
+		 int i_data_s0, 
+		 int i_data_s1
+		 );
 
 // Fucntions for accessing command IDs and other constants
 int id_cmd_fifo()
@@ -164,6 +178,60 @@ int has_trigger()
   return 0;
 #endif
 }
+
+// ------------------------------------------------------------------------
+// convert2phys - converts aquired integer data to physical units (volts)
+//
+// ------------------------------------------------------------------------
+int convert2phys(
+		 void *d_data,  // output array of double data
+		 void *i_data,  // input array of integer data
+		 int nrow,      // number of rows in d_data and i_data
+		 int ncol,      // number of columns in d_data and i_data
+		 int d_data_s0, // strides for d_data 
+		 int d_data_s1, //  "              "
+		 int i_data_s0, // strides for i_data
+		 int i_data_s1  //  "              "
+		 )
+{
+  comedi_t *device;
+  comedi_range *range[NUM_AIN];
+  int maxdata[NUM_AIN];
+  int *i_ptr;
+  double *d_ptr;
+  int i_value;
+  int d_value;
+  int i,j;
+  
+  // Check that we have the correct number of columns
+  if (NUM_AIN != ncol) {
+    return ERROR_AIN_SIZE;
+  }
+
+  // Get range and max data - Add check for error
+  // Temporaily redirect stdout ot stderr to /dev/null to silence annoying message
+  device = comedi_open(COMEDI_DEV); // Need to fix this ?? get some bug message
+
+  for (i=0;i<NUM_AIN;i++) {
+    range[i] = comedi_get_range(device,AIN_SUBDEV,ain_chan[i],AIN_RANGE);
+    maxdata[i] = comedi_get_maxdata(device,AIN_SUBDEV,ain_chan[i]);
+  }
+  
+  // Convert data to physical units
+  for(i=0; i<nrow; i++) {
+    for(j=0; j<ncol;j++) {
+      i_ptr = (int *) (i_data + i*i_data_s0 + j*i_data_s1);
+      d_ptr = (double *) (d_data + i*d_data_s0 + j*d_data_s1);
+      *d_ptr = comedi_to_phys(*i_ptr, range[j], maxdata[j]);
+    }
+  }
+
+  // Add check of error condition
+  comedi_close(device);
+
+  return SUCCESS;
+}
+
 
 // -----------------------------------------------------------------------
 // shm_alloc - allocates shared memory buffers w/ motor_ctl driver. 

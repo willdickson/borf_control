@@ -7,7 +7,7 @@ INCLUDES= -I/usr/realtime/include/
 EXTRA_FLAGS= -iquote$(local_include)
 
 libmotor_shm.so.1: motor_shm.o
-	${CC} -shared -W1,-soname,$@ -o $@.0.1 $?
+	${CC} -shared -W1,-soname,$@ -o $@.0.1 $? -l comedi 
 
 motor_shm.o: motor_shm.c
 	${CC} ${CFLAGS} ${EXTRA_FLAGS} $? -o $@ ${INCLUDES} 

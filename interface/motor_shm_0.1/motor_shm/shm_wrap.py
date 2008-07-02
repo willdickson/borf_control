@@ -101,6 +101,18 @@ libmotor_shm.read_os_buffer_1st.argstype = [
     ctypes.c_int,
     ]
 
+libmotor_shm.convert2phys.restype = ctypes.c_int
+libmotor_shm.convert2phys.argstype = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int
+]
+
 libmotor_shm.shm_alloc.restype = ctypes.c_int
 libmotor_shm.shm_free.restype = ctypes.c_int
 shm_alloc = libmotor_shm.shm_alloc
@@ -206,6 +218,41 @@ def read_ain_buffer():
     return ain_data
 
 
+def convert2phys(i_data):
+    """
+    Converts raw integer values from daq card to physical units (volts)
+    """
+    debug_print('convert2phys') 
+    n, m = i_data.shape
+    if m != num_ain():
+        raise ValueError, 'i_data shape incorrect'
+    # Get pointer and strides for i_data
+    i_data_ptr = i_data.ctypes.data_as(ctypes.c_void_p)
+    i_data_s0 = i_data.ctypes.strides[0]
+    i_data_s1 = i_data.ctypes.strides[1]
+    # Get pointer and strides for d_data
+    d_data = scipy.zeros((n,m), scipy.float64)
+    d_data_ptr = d_data.ctypes.data_as(ctypes.c_void_p)
+    d_data_s0 = d_data.ctypes.strides[0]
+    d_data_s1 = d_data.ctypes.strides[1]
+    # Get number of rows and columns
+    nrow = i_data.ctypes.shape[0]
+    ncol = i_data.ctypes.shape[1]
+    # Convert
+    flag = libmotor_shm.convert2phys(
+        d_data_ptr, 
+        i_data_ptr, 
+        nrow, 
+        ncol, 
+        d_data_s0, 
+        d_data_s1,
+        i_data_s0,
+        i_data_s1
+        )
+    if not flag==0:
+        raise RuntimeError, 'convert2phys failed'
+    return d_data
+    
 def read_os_buffer(mode='full'):
     """
     Read contents of outscan buffer.
