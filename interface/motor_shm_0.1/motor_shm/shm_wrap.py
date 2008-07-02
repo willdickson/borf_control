@@ -51,9 +51,14 @@ if has_trigger():
 num_stepper = libmotor_shm.num_stepper
 num_motor = libmotor_shm.num_motor
 success = libmotor_shm.success
+fail = libmotor_shm.fail
 error_locked = libmotor_shm.error_locked
 error_malloc = libmotor_shm.error_malloc
 error_size = libmotor_shm.error_size
+error_mlock = libmotor_shm.error_mlock
+error_munlock = libmotor_shm.error_munlock
+error_free = libmotor_shm.error_free
+error_comedi = libmotor_shm.error_comedi
 os_period_ns = libmotor_shm.os_period_ns
 os_period_s = libmotor_shm.os_period_s
 os_period_s.restype = ctypes.c_double
@@ -70,6 +75,19 @@ os_buffer = libmotor_shm.os_buffer
 ain_buffer = libmotor_shm.ain_buffer
 num_ain = libmotor_shm.num_ain
 
+# Error dictionary
+return_code_dict = {
+    success() : 'SUCCESS',
+    fail() : 'FAIL',
+    error_locked() : 'ERROR_LOCKED',
+    error_malloc(): 'ERROR_MALLOC',
+    error_size() : 'ERROR_SIZE',
+    error_mlock() : 'ERROR_MLOCK',
+    error_munlock() : 'ERROR_MUNLOCK',
+    error_free() : 'ERROR_FREE',
+    error_comedi() : 'ERROR_COMEDI',
+}
+    
 # Functions with arguments
 libmotor_shm.get_buffer_len.restype = ctypes.c_int
 libmotor_shm.get_buffer_len.argstype = [
@@ -194,7 +212,8 @@ def load_buffer(buff, os_data):
         raise ValueError, 'uknown buffer'
     flag = libmotor_shm.load_buffer(buff_int,os_data_ptr,nrow,ncol,s0,s1)
     if not flag==0:
-        raise MemoryError, 'failed to load outscan buffer'
+        error_str = 'failed to load outscan buffer: %s'%(return_code_dict[flag],)
+        raise MemoryError, error_str
 
 def read_ain_buffer():
     """
@@ -214,7 +233,8 @@ def read_ain_buffer():
     ncol = ain_data.ctypes.shape[1]
     flag = libmotor_shm.read_ain_buffer(ain_data_ptr,nrow,ncol,s0,s1)
     if not flag==0:
-        raise MemoryError, 'failed to read outscan buffer'
+        error_str = 'failed to read ain_buffer buffer: %s'%(return_code_dict[flag],)
+        raise MemoryError, error_str
     return ain_data
 
 
@@ -250,7 +270,8 @@ def convert2phys(i_data):
         i_data_s1
         )
     if not flag==0:
-        raise RuntimeError, 'convert2phys failed'
+        error_str = 'convert2phys failed: %s'%(return_code_dict[flag],)
+        raise RuntimeError, error_str
     return d_data
     
 def read_os_buffer(mode='full'):
@@ -275,7 +296,8 @@ def read_os_buffer(mode='full'):
         ncol = os_data.ctypes.shape[1]
         flag = libmotor_shm.read_os_buffer(os_data_ptr,nrow,ncol,s0,s1)
         if not flag==0:
-            raise MemoryError, 'failed to read outscan buffer'
+            error_str = 'failed to read outscan buffer: %s'%(return_code_dict[flag],)
+            raise MemoryError, error_str
     elif mode=='1st line':
         os_data = scipy.zeros((m,), scipy.int_)
         os_data_ptr = os_data.ctypes.data_as(ctypes.c_void_p)
@@ -283,7 +305,8 @@ def read_os_buffer(mode='full'):
         n = os_data.ctypes.shape[0]
         flag = libmotor_shm.read_os_buffer_1st(os_data_ptr,n,s)
         if not flag==0:
-            raise MemoryError, 'failed to read outscan buffer'
+            error_str = 'failed to read outscan buffer: %s'%(return_code_dict[flag],)
+            raise MemoryError, error_str
     else:
         raise ValueError, 'unkown mode %s'%(mode,)
     return os_data

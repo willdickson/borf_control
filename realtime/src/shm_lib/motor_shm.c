@@ -7,7 +7,6 @@
   Author: Will Dicksom
 --------------------------------------------------------------------*/
 #include <stdio.h>
-//#include <rtai_comedi.h>
 #include <user_comedilib.h>
 #include <sys/mman.h>
 #include "motor_ctl.h"
@@ -21,7 +20,7 @@
 #define ERROR_MLOCK -5
 #define ERROR_MUNLOCK  -6
 #define ERROR_FREE -7
-#define ERROR_AIN_SIZE -8;
+#define ERROR_COMEDI -8
 
 // Shared memory buffers
 static struct buffer_str *os_buffer_shm;
@@ -29,8 +28,10 @@ static struct buffer_str *mv_buffer_shm;
 static struct status_info_str *status_info_shm;
 static struct ain_buffer_str *ain_buffer_shm;
 
+// Constants
 const int ain_chan[NUM_AIN] = AIN_CHAN;      
 
+// Function prototypes
 int shm_alloc(void);
 int shm_free(void);
 int get_buffer_len(int buff_type);
@@ -50,123 +51,138 @@ int convert2phys(
 		 );
 
 // Fucntions for accessing command IDs and other constants
-int id_cmd_fifo()
+int id_cmd_fifo(void)
 {return FIFO_COMMAND;}
 
-int id_cmd_stop()
+int id_cmd_stop(void)
 {return CMD_STOP;}
 
-int id_cmd_start()
+int id_cmd_start(void)
 {return CMD_START;}
 
-int id_cmd_standby_on()
+int id_cmd_standby_on(void)
 {return CMD_STANDBY_ON;}
 
-int id_cmd_standby_off()
+int id_cmd_standby_off(void)
 {return CMD_STANDBY_OFF;}
 
-int id_cmd_enable()
+int id_cmd_enable(void)
 {return CMD_ENABLE;}
 
-int id_cmd_disable()
+int id_cmd_disable(void)
 {return CMD_DISABLE;}
 
-int id_cmd_unlock_buffer()
+int id_cmd_unlock_buffer(void)
 {return CMD_UNLOCK_BUFFER;}
 
-int id_cmd_lock_buffer()
+int id_cmd_lock_buffer(void)
 {return CMD_LOCK_BUFFER;}
 
-int id_cmd_zero_buffer_pos()
+int id_cmd_zero_buffer_pos(void)
 {return CMD_ZERO_BUFFER_POS;}
 
-int id_cmd_zero_motor_ind()
+int id_cmd_zero_motor_ind(void)
 {return CMD_ZERO_MOTOR_IND; }
 
-int id_cmd_loopmode_on()
+int id_cmd_loopmode_on(void)
 {return CMD_LOOPMODE_ON;}
 
-int id_cmd_loopmode_off()
+int id_cmd_loopmode_off(void)
 {return CMD_LOOPMODE_OFF;}
 
 #ifdef TRIG
-int id_cmd_set_trig_index()
+int id_cmd_set_trig_index(void)
 {return CMD_SET_TRIG_INDEX;}
 
-int id_cmd_set_trig_width()
+int id_cmd_set_trig_width(void)
 {return CMD_SET_TRIG_WIDTH;}
 #endif
 
-int id_cmd_set_os_buffer()
+int id_cmd_set_os_buffer(void)
 {return CMD_SET_OS_BUFFER;}
 
-int id_cmd_set_mv_buffer()
+int id_cmd_set_mv_buffer(void)
 {return CMD_SET_MV_BUFFER;}
 
-int stepper_motor()
+int stepper_motor(void)
 {return STEPPER_MOTOR;}
 
-int clkdir_motor()
+int clkdir_motor(void)
 {return CLKDIR_MOTOR;}
 
-int num_stepper()
+int num_stepper(void)
 {return NUM_STEPPER;}
 
-int num_motor()
+int num_motor(void)
 {return NUM_MOTOR;}
 
-int success()
+int success(void)
 {return SUCCESS;}
 
-int error_locked()
+int fail(void) 
+{return FAIL;}
+
+int error_locked(void)
 {return ERROR_LOCKED;}
 
-int error_malloc()
+int error_malloc(void)
 {return ERROR_MALLOC;}
 
-int error_size()
+int error_size(void)
 {return ERROR_SIZE;}
 
-int os_period_ns()
+int error_mlock(void)
+{return ERROR_MLOCK;}
+
+int error_munlock()
+{return ERROR_MUNLOCK;}
+
+int error_free(void)
+{return ERROR_FREE;}
+
+int error_comedi(void)
+{return ERROR_COMEDI;}
+
+int os_period_ns(void)
 {return PERIOD_NS;}
 
-double os_period_s()
+double os_period_s(void)
 {return ((float)PERIOD_NS)*1.0e-9;}
 
-double os_frequency()
+double os_frequency(void)
 {return 1.0/os_period_s();}
 
-int index_per_rev()
+int index_per_rev(void)
 {return IND_PER_REV;}
 
-double step2deg()
+double step2deg(void)
 {return STEP2DEG;}
 
-double deg2step()
+double deg2step(void)
 {return 1.0/((double)STEP2DEG);}
 
-int buffer_max_len()
+int buffer_max_len(void)
 {return BUFFER_MAX_LEN;}
 
-int os_buffer()
+int os_buffer(void)
 {return OS_BUFFER;}
 
-int mv_buffer()
+int mv_buffer(void)
 {return MV_BUFFER;}
 
-int ain_buffer()
+int ain_buffer(void)
 {return AIN_BUFFER;}
 
-int num_ain()
+int num_ain(void)
 {return NUM_AIN;}
 
 #ifdef TRIG
-int num_trigger()
+int num_trigger(void)
 {return NUM_TRIG;}
 #endif
 
 #ifdef TRIG
-int dflt_trigger_width()
+int dflt_trigger_width(void)
 {return DFLT_TRIG_WIDTH;}
 #endif
 
@@ -202,15 +218,20 @@ int convert2phys(
   int i_value;
   int d_value;
   int i,j;
+  int rtn_val;
   
   // Check that we have the correct number of columns
   if (NUM_AIN != ncol) {
-    return ERROR_AIN_SIZE;
+    return ERROR_SIZE;
   }
 
   // Get range and max data - Add check for error
-  // Temporaily redirect stdout ot stderr to /dev/null to silence annoying message
-  device = comedi_open(COMEDI_DEV); // Need to fix this ?? get some bug message
+  freopen("/dev/null", "w", stderr); // Redirect stderr to get rid of annoying message
+  device = comedi_open(COMEDI_DEV);  
+  freopen("/dev/tty", "w", stderr);  // Return stderr to terminal
+  if (device == NULL) {
+    return ERROR_COMEDI;
+  }
 
   for (i=0;i<NUM_AIN;i++) {
     range[i] = comedi_get_range(device,AIN_SUBDEV,ain_chan[i],AIN_RANGE);
@@ -227,7 +248,10 @@ int convert2phys(
   }
 
   // Add check of error condition
-  comedi_close(device);
+  rtn_val = comedi_close(device);
+  if (rtn_val != 0) {
+    return ERROR_COMEDI;
+  }
 
   return SUCCESS;
 }
