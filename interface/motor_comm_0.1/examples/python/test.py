@@ -9,8 +9,6 @@ import scipy
 import time
 import pylab
 from motor_comm import Motor_Comm
-from motor_shm import convert2phys
-
 
 def kine(t,T):
     A = 10.0
@@ -48,7 +46,6 @@ comm.wait()
 print 'reading buffers'
 os_buff = comm.read_os_buffer()
 ain_buff = comm.read_ain_buffer()
-ain_buff = convert2phys(ain_buff)
 
 pylab.figure(1)
 pylab.plot(t/T, os_buff[:,3], 'b')

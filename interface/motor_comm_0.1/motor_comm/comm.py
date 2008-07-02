@@ -21,6 +21,7 @@ from motor_shm import mv_buffer
 from motor_shm import os_buffer
 from motor_shm import shm_alloc
 from motor_shm import shm_free
+from motor_shm import convert2phys
 
 DEBUG=False
 
@@ -519,6 +520,7 @@ class Motor_Comm:
         """
         self.debug_print('read_ain_buffer')
         ain_buff = read_ain_buffer()
+        ain_buff = convert2phys(ain_buff)
         return ain_buff
 
     def buffer_is_locked(self):
@@ -735,6 +737,7 @@ class Motor_Comm:
         """
         self.debug_print('status')
         status = get_status_info()
+        status['ain_data'] = convert2phys(scipy.array([status['ain_data']]))[0,:]
         return status
 
     def zero_buffer_pos(self):
@@ -809,7 +812,7 @@ class Motor_Comm:
         for key in status_keys:
             print '  %s:'%(key,), status[key]
         
-
+    
     def get_ain_data(self):
         """
         Get immediate value of analog input data from status 
@@ -830,7 +833,7 @@ usage =""" %prog command [OPTION]...
 
 Command Summary:
 
- disable         - disbale stepper motor drive
+ disable         - disable stepper motor drive
  enable          - enable stepper motor drive
  help-cmd        - get help on specific command
  help            - print this message
