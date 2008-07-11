@@ -11,7 +11,7 @@ import pylab
 from motor_comm import Motor_Comm
 
 def kine(t,T):
-    A = 10.0
+    A = 40.0
     return A*scipy.cos(2.0*scipy.pi*t/T) 
 
 print 'setting up interface'

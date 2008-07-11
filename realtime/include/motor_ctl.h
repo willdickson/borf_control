@@ -29,9 +29,9 @@
 #define COMEDI_DEV "/dev/comedi0"
 #define AIN_RANGE 0
 #define AIN_SUBDEV 0
-#define NUM_AIN 6
-#define AIN_CHAN {0,1,2,3,4,5}
-#define AIN_AREF {AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND} 
+#define NUM_AIN 2
+#define AIN_CHAN {0,1}
+#define AIN_AREF {AREF_GROUND,AREF_GROUND}
 
 // DAQ card digital IO
 #define DIO_SUBDEV 2
@@ -71,10 +71,10 @@
 #define IND_PER_REV 400
 
 // Clock and Direction constants
-#define NUM_CLKDIR 2
+#define NUM_CLKDIR 6
 #define CLK_HI_TIME 50000
-#define CLK_DIO_PINS {0,2}
-#define DIR_DIO_PINS {1,3}
+#define CLK_DIO_PINS {0,2,4,6,8,10}
+#define DIR_DIO_PINS {1,3,5,7,9,11}
 #define DIR_POS 1
 #define DIR_NEG 0
 
