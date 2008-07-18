@@ -1,7 +1,7 @@
 local_include=$(PWD)/../../include/
 PWD=$(shell pwd)
 CC= gcc
-CFLAGS= -DCLKDIR -fPIC -c 
+CFLAGS= -DTRIG -DCLKDIR -fPIC -c 
 #CFLAGS= -DPWM -DTRIG  -fPIC -c 
 INCLUDES= -I/usr/realtime/include/
 EXTRA_FLAGS= -iquote$(local_include)

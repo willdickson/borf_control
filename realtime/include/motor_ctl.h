@@ -11,11 +11,6 @@
 #include <rtai_nam2num.h>
 #include <rtai_rwl.h>
 
-// Currently TRIG option is broken
-#if defined(TRIG)
-#error TRIG option is currently broken
-#endif
-
 // FIFO IDs 
 #define FIFO_COMMAND 0
 
@@ -29,9 +24,9 @@
 #define COMEDI_DEV "/dev/comedi0"
 #define AIN_RANGE 0
 #define AIN_SUBDEV 0
-#define NUM_AIN 2
-#define AIN_CHAN {0,1}
-#define AIN_AREF {AREF_GROUND,AREF_GROUND}
+#define NUM_AIN 4
+#define AIN_CHAN {0,1,2,3}
+#define AIN_AREF {AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND}
 
 // DAQ card digital IO
 #define DIO_SUBDEV 2
@@ -56,7 +51,7 @@
 
 // Constants 
 #define PERIOD_NS 500000
-#define BUFFER_MAX_LEN 1500000
+#define BUFFER_MAX_LEN 1000000
 #define ON 1
 #define OFF 0
 #define STEPPER_MOTOR 0
@@ -80,8 +75,9 @@
 
 // Trigger constants
 #ifdef TRIG
-#define NUM_TRIG 7 //Max=8
+#define NUM_TRIG 2 
 #define DFLT_TRIG_WIDTH 20
+#define TRIG_DIO_PINS {12,13}
 #endif 
 
 #define NUM_MOTOR (NUM_STEPPER+NUM_CLKDIR)

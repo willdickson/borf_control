@@ -95,7 +95,7 @@ const char motor_step[NUM_STEP][NUM_STEPPER] ={
 
 // Trigger output pins
 #ifdef TRIG
-static int trig_dio_pins[NUM_TRIG];
+static int trig_dio_pins[NUM_TRIG] = TRIG_DIO_PINS;
 #endif
 
 // Clock and direction output pins
@@ -204,14 +204,11 @@ void init_trig_state(void)
 void send_triggers(void)
 {
   int i;
-  //int j;
   int buffer_pos;
-  //char trig_bits = 0x0;
   
   // Get buffer position
   buffer_pos = sys_state.buffer_pos;
   
-  //trig_bits = inb(TRIG_PWM_PORT);
   for (i=0; i<NUM_TRIG; i++) {
     
     // Turn on trigger if index is equal to current buffer position 
@@ -234,8 +231,6 @@ void send_triggers(void)
       trig_state.count[i] = 0;
     }
   }
-  //outb(trig_bits,TRIG_PWM_PORT);
-  
   return;
 }
 #endif
@@ -465,6 +460,7 @@ void set_status_info()
 // init_trig_dio_pins - intialize bit mask for pwm output
 //
 // ------------------------------------------------------------------------
+/*
 #ifdef TRIG
 void init_trig_dio_pins(void)
 {
@@ -475,6 +471,7 @@ void init_trig_dio_pins(void)
   return;
 }
 #endif
+*/
 
 // -------------------------------------------------------------------------
 // cmd_handler - handler function for Command FIFO. This function is 
@@ -647,7 +644,7 @@ static int __motor_ctl_init(void)
 
   // Initialize DIO pin configuration
 #ifdef TRIG
-  init_trig_dio_pins();
+  //init_trig_dio_pins();
   for (i=0; i<NUM_TRIG; i++) {
     comedi_dio_config(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], COMEDI_OUTPUT);
   } 

@@ -3,7 +3,7 @@ obj-m	:= motor_ctl.o
 KDIR	:= /lib/modules/$(shell uname -r)/build
 PWD	:= $(shell pwd)
 UNAMER	:= $(shell uname -r)
-EXTRA_CFLAGS 	:= -DCLKDIR -iquote$(local_include) -I/usr/local/include/ -I/usr/realtime/include/ -I/usr/include/ -ffast-math -mhard-float
+EXTRA_CFLAGS 	:= -DCLKDIR -DTRIG -iquote$(local_include) -I/usr/local/include/ -I/usr/realtime/include/ -I/usr/include/ -ffast-math -mhard-float
 #EXTRA_CFLAGS 	:= -DPWM -DTRIG -iquote$(local_include) -I/usr/local/include/ -I/usr/realtime/include/ -I/usr/include/ -ffast-math -mhard-float
 
 
