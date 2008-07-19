@@ -7,7 +7,7 @@
 # --------------------------------------------------------------
 import scipy
 import time
-import pylab
+#import pylab
 from motor_comm import Motor_Comm
 
 def kine(t,T):
@@ -23,21 +23,20 @@ dt = comm.dt()
 num_motor = comm.num_motor()
 
 print 'creating kinematics'
-T = 1.0
+T = 2.0
 num_period = 1.0
 n = int(num_period*T/dt)
 
 t = scipy.arange(0.0,n)*dt
 x = scipy.zeros((n,num_motor))
-for i in range(0,num_motor):
-    x[:,i] = kine(t,T)
+
+x[:,2] = kine(t,T)
 
 print 'loading outscan buffer'
 comm.load_os_buffer(x)
 
-trig_ind = int(n/2)
 print 'trig_ind:'
-comm.set_trig_ind([0,1],[trig_ind,-1])
+comm.set_trig_ind([0,1],[0,200])
 
 print 'moving to start'
 comm.move2start()

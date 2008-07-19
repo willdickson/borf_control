@@ -27,7 +27,7 @@ DEBUG=False
 
 NSEC2SEC = 1.0e-9
 DFLT_MOVE_ACCEL = 100.0 #steps/sec**2
-DFLT_MOVE_MAX_VELO = 100.0 #steps/sec
+DFLT_MOVE_MAX_VELO = 500.0 #steps/sec
 DFLT_WAIT_SLEEP_T = 0.5
 BUFFER_LOCK_MAX_CNT = 5
 BUFFER_LOCK_SLEEP_T = 0.25
@@ -279,7 +279,7 @@ class Motor_Comm:
         self.debug_print('atexit')
         if self.shm == True:
             shm_free()
-            print 'freeing shared memory in atexit'
+            #print 'freeing shared memory in atexit'
             self.shm=False
 
     def __del__(self):
@@ -745,7 +745,7 @@ class Motor_Comm:
         Set position in outscan buffer to zero
         """
         self.debug_print('zero_buffer_pos')
-        cmd2motor('zero-buffer-pos')
+        cmd2motor_ctl('zero-buffer-pos')
         return
 
     def zero_motor_ind(self):
@@ -753,7 +753,7 @@ class Motor_Comm:
         Set the current motor position to the zero index positon. 
         """
         self.debug_print('zero_motor_ind')
-        cmd2motor('zero-motor-ind')
+        cmd2motor_ctl('zero-motor-ind')
         return
 
     def set_trig_ind(self, trig_num, trig_ind):

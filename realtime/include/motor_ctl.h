@@ -50,7 +50,7 @@
 #define CMD_SET_MV_BUFFER 15
 
 // Constants 
-#define PERIOD_NS 500000
+#define PERIOD_NS 1000000
 #define BUFFER_MAX_LEN 1000000
 #define ON 1
 #define OFF 0
@@ -66,10 +66,10 @@
 #define IND_PER_REV 400
 
 // Clock and Direction constants
-#define NUM_CLKDIR 6
+#define NUM_CLKDIR 2
 #define CLK_HI_TIME 50000
-#define CLK_DIO_PINS {0,2,4,6,8,10}
-#define DIR_DIO_PINS {1,3,5,7,9,11}
+#define CLK_DIO_PINS {0,2}
+#define DIR_DIO_PINS {1,3}
 #define DIR_POS 1
 #define DIR_NEG 0
 
@@ -77,7 +77,7 @@
 #ifdef TRIG
 #define NUM_TRIG 2 
 #define DFLT_TRIG_WIDTH 20
-#define TRIG_DIO_PINS {12,13}
+#define TRIG_DIO_PINS {12,12}
 #endif 
 
 #define NUM_MOTOR (NUM_STEPPER+NUM_CLKDIR)

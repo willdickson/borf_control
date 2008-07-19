@@ -130,7 +130,9 @@ void main_task_func(long arg) {
   for (;;) {
     now_ns = rt_get_time_ns();
 #ifdef TRIG
-    send_triggers();
+    if (sys_state.buffer==OS_BUFFER) {
+      send_triggers();
+    }
 #endif
     acquire_data();
     send_motor_cmds();
@@ -221,14 +223,16 @@ void send_triggers(void)
       comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_HI);	
       trig_state.count[i]+= 1;
     }
-    else {
-      comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
-    }
+    //else {
+    //  comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
+    //}
 
     // Terminate trigger at approriate width 
-    if (trig_state.count[i]== trig_state.width[i]) {
+    if (trig_state.count[i]>=trig_state.width[i]) {
       trig_state.status[i] = OFF;
       trig_state.count[i] = 0;
+      comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
+      
     }
   }
   return;
