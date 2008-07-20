@@ -77,7 +77,7 @@
 #ifdef TRIG
 #define NUM_TRIG 2 
 #define DFLT_TRIG_WIDTH 20
-#define TRIG_DIO_PINS {12,12}
+#define TRIG_DIO_PINS {12,13}
 #endif 
 
 #define NUM_MOTOR (NUM_STEPPER+NUM_CLKDIR)
