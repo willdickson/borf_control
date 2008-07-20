@@ -50,7 +50,7 @@
 #define CMD_SET_MV_BUFFER 15
 
 // Constants 
-#define PERIOD_NS 1000000
+#define PERIOD_NS 500000
 #define BUFFER_MAX_LEN 1000000
 #define ON 1
 #define OFF 0

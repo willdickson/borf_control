@@ -130,9 +130,7 @@ void main_task_func(long arg) {
   for (;;) {
     now_ns = rt_get_time_ns();
 #ifdef TRIG
-    if (sys_state.buffer==OS_BUFFER) {
       send_triggers();
-    }
 #endif
     acquire_data();
     send_motor_cmds();
@@ -208,31 +206,34 @@ void send_triggers(void)
   int i;
   int buffer_pos;
   
-  // Get buffer position
-  buffer_pos = sys_state.buffer_pos;
+  if (sys_state.buffer==OS_BUFFER) {
   
-  for (i=0; i<NUM_TRIG; i++) {
+    // Get buffer position
+    buffer_pos = sys_state.buffer_pos;
+  
+    for (i=0; i<NUM_TRIG; i++) {
     
-    // Turn on trigger if index is equal to current buffer position 
-    if (trig_state.index[i] == buffer_pos && sys_state.outscan==ON) {
-      trig_state.status[i] = ON;
-    }
+      // Turn on trigger if index is equal to current buffer position 
+      if (trig_state.index[i] == buffer_pos && sys_state.outscan==ON) {
+	trig_state.status[i] = ON;
+      }
 
-    // IF state is ON set HI and increment counter otherwise set LO
-    if (trig_state.status[i]==ON) {
-      comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_HI);	
-      trig_state.count[i]+= 1;
-    }
-    //else {
-    //  comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
-    //}
+      // IF state is ON set HI and increment counter otherwise set LO
+      if (trig_state.status[i]==ON) {
+	comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_HI);	
+	trig_state.count[i]+= 1;
+      }
+      //else {
+      //  comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
+      //}
 
-    // Terminate trigger at approriate width 
-    if (trig_state.count[i]>=trig_state.width[i]) {
-      trig_state.status[i] = OFF;
-      trig_state.count[i] = 0;
-      comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
+      // Terminate trigger at approriate width 
+      if (trig_state.count[i]>=trig_state.width[i]) {
+	trig_state.status[i] = OFF;
+	trig_state.count[i] = 0;
+	comedi_dio_write(sys_state.device, DIO_SUBDEV, trig_dio_pins[i], DIO_LO);	
       
+      }
     }
   }
   return;
