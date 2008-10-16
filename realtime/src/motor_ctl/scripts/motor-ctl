@@ -38,41 +38,41 @@ function waitfor_rtf0 {
 # and configure device
 function start_motor_ctl {    
     echo starting motor_ctl
-    sudo insmod ${rtai_dir}rtai_hal.ko 
-    sudo insmod ${rtai_dir}rtai_sched.ko 
-    sudo insmod ${rtai_dir}rtai_fifos.ko
-    sudo insmod ${rtai_dir}rtai_sem.ko
-    sudo insmod ${rtai_dir}rtai_mbx.ko
-    sudo insmod ${rtai_dir}rtai_msg.ko
-    sudo insmod ${rtai_dir}rtai_shm.ko
-    sudo insmod ${rtai_dir}rtai_wd.ko
-    sudo modprobe comedi
-    sudo modprobe kcomedilib
-    sudo insmod ${rtai_dir}rtai_comedi.ko
-    sudo modprobe ${daq_card_driver}
+    insmod ${rtai_dir}rtai_hal.ko 
+    insmod ${rtai_dir}rtai_sched.ko 
+    insmod ${rtai_dir}rtai_fifos.ko
+    insmod ${rtai_dir}rtai_sem.ko
+    insmod ${rtai_dir}rtai_mbx.ko
+    insmod ${rtai_dir}rtai_msg.ko
+    insmod ${rtai_dir}rtai_shm.ko
+    insmod ${rtai_dir}rtai_wd.ko
+    modprobe comedi
+    modprobe kcomedilib
+    insmod ${rtai_dir}rtai_comedi.ko
+    modprobe ${daq_card_driver}
     waitfor_comedi_dev # Wait for udev device configuration 
-    sudo comedi_config $comedi_dev $daq_card_driver 
+    comedi_config $comedi_dev $daq_card_driver 
     waitfor_rtf0
-    sudo insmod /usr/local/lib/modules/$unamer/motor_ctl.ko
+    insmod /usr/local/lib/modules/$unamer/motor_ctl.ko
     echo "done"
 }
 
 # Remove required kernel modules for rtai and comedi
 function stop_motor_ctl {
     echo stopping motor_ctl
-    sudo rmmod motor_ctl
-    sudo modprobe -r $daq_card_driver
-    sudo rmmod rtai_comedi
-    sudo modprobe -r kcomedilib
-    sudo modprobe -r comedi
-    sudo rmmod rtai_wd
-    sudo rmmod rtai_shm
-    sudo rmmod rtai_msg
-    sudo rmmod rtai_mbx
-    sudo rmmod rtai_sem
-    sudo rmmod rtai_fifos
-    sudo rmmod rtai_sched
-    sudo rmmod rtai_hal
+    rmmod motor_ctl
+    modprobe -r $daq_card_driver
+    rmmod rtai_comedi
+    modprobe -r kcomedilib
+    modprobe -r comedi
+    rmmod rtai_wd
+    rmmod rtai_shm
+    rmmod rtai_msg
+    rmmod rtai_mbx
+    rmmod rtai_sem
+    rmmod rtai_fifos
+    rmmod rtai_sched
+    rmmod rtai_hal
     echo "done"
 }
 
