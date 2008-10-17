@@ -137,7 +137,7 @@ void main_task_func(long arg) {
     set_status_info();
 
     // Sleep for a bit and then set the clks low
-    rt_sleep_until(nano2count(rt_get_time_ns() + CLK_HI_TIME));
+    rt_sleep_until(nano2count(now_ns + CLK_HI_TIME));
     set_clk_low(); 
 
     // Sleep until next cycle 

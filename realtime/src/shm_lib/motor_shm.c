@@ -36,6 +36,7 @@ int shm_alloc(void);
 int shm_free(void);
 int get_buffer_len(int buff_type);
 int read_os_buffer(void *data, int nrow, int ncol, int s0, int s1); 
+int read_mv_buffer(void *data, int nrow, int ncol, int s0, int s1);
 int read_os_buffer_1st(void *data, int n, int s);
 int get_status_info(struct status_info_str *status_info);
 int load_buffer(int buff_type, void *data, int nrow, int ncol, int s0, int s1);
@@ -495,7 +496,6 @@ int read_ain_buffer(void *data, int nrow, int ncol, int s0, int s1)
 // ncol = number of columns in array
 // s0 = array strides for 0th dimension
 // s1 = array stgrides for 1st dimension
-
 // --------------------------------------------------------------------------------
 int read_os_buffer(void *data, int nrow, int ncol, int s0, int s1) 
 {
@@ -523,6 +523,44 @@ int read_os_buffer(void *data, int nrow, int ncol, int s0, int s1)
   return SUCCESS;
 }
 
+// --------------------------------------------------------------------------------
+// read_mv_buffer  reads contents of move buffer. Note that shared memory must 
+// be allocted (using shm_alloc) must be before calling this function. Output is 
+// placed in the number array  pointed to by the pointer data. 
+//
+// Arguments: 
+//
+// data = pointer to numpy array data
+// nrow = number of rows in array
+// ncol = number of columns in array
+// s0 = array strides for 0th dimension
+// s1 = array stgrides for 1st dimension
+// --------------------------------------------------------------------------------
+int read_mv_buffer(void *data, int nrow, int ncol, int s0, int s1) 
+{
+  int i,j;
+  int *ptr;
+
+#ifdef DEBUG
+  printf("\t    *read_mv_buffer (C)\n");
+#endif
+
+  // Check length
+  if (nrow > (mv_buffer_shm->len)) {
+    return ERROR_SIZE;
+  }
+  if (ncol != NUM_MOTOR) {
+    return ERROR_SIZE;
+  }
+  // Read buffer contents
+  for(i=0; i<nrow; i++) {
+    for(j=0; j<ncol;j++) {
+      ptr = (int *)(data + i*s0 + j*s1);
+      *ptr = mv_buffer_shm->data[i][j];     
+    }
+  }
+  return SUCCESS;
+}
 
 //---------------------------------------------------------------------------------- 
 // read_os_buffer_1st - reads 1st element in outscan buffer. Note, a

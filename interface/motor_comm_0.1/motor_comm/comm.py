@@ -16,6 +16,7 @@ from motor_shm import cmd_dict
 from motor_shm import get_status_info
 from motor_shm import load_buffer
 from motor_shm import read_os_buffer
+from motor_shm import read_mv_buffer
 from motor_shm import read_ain_buffer
 from motor_shm import mv_buffer
 from motor_shm import os_buffer
@@ -513,6 +514,21 @@ class Motor_Comm:
             raise ValueError, 'Unknown mode %s'%(mode,)
         os_buff = read_os_buffer(mode=mode)
         return os_buff
+
+    def read_mv_buffer(self,mode='full'):
+        """
+        Read contents of move buffer
+
+        Keyword: mode = 'full' or '1st line'. If mode is 'full' the
+        contents of the entire outscan buffer are returned. If mode is
+        '1st line' only the first line of the outscan buffer is
+        returned.
+        """
+        self.debug_print('read_mv_buffer')
+        if not mode in ('full', '1st line'):
+            raise ValueError, 'Unknown mode %s'%(mode,)
+        mv_buff = read_mv_buffer(mode=mode)
+        return mv_buff
       
     def read_ain_buffer(self):
         """

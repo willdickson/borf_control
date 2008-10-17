@@ -24,9 +24,9 @@
 #define COMEDI_DEV "/dev/comedi0"
 #define AIN_RANGE 0
 #define AIN_SUBDEV 0
-#define NUM_AIN 4
-#define AIN_CHAN {0,1,2,3}
-#define AIN_AREF {AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND}
+#define NUM_AIN 6
+#define AIN_CHAN {0,1,2,3,4,5}
+#define AIN_AREF {AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND,AREF_GROUND}
 
 // DAQ card digital IO
 #define DIO_SUBDEV 2
@@ -50,7 +50,7 @@
 #define CMD_SET_MV_BUFFER 15
 
 // Constants 
-#define PERIOD_NS 200000
+#define PERIOD_NS 500000
 #define BUFFER_MAX_LEN 1000000
 #define ON 1
 #define OFF 0
@@ -66,10 +66,10 @@
 #define IND_PER_REV 400
 
 // Clock and Direction constants
-#define NUM_CLKDIR 7
-#define CLK_HI_TIME 50000
-#define CLK_DIO_PINS {0,2,4,6,8,10,12}
-#define DIR_DIO_PINS {1,3,5,7,9,11,13}
+#define NUM_CLKDIR 1
+#define CLK_HI_TIME (PERIOD_NS/2)
+#define CLK_DIO_PINS {0}
+#define DIR_DIO_PINS {1}
 #define DIR_POS 1
 #define DIR_NEG 0
 
@@ -77,7 +77,7 @@
 #ifdef TRIG
 #define NUM_TRIG 2 
 #define DFLT_TRIG_WIDTH 20
-#define TRIG_DIO_PINS {12,13}
+#define TRIG_DIO_PINS {6,7}
 #endif 
 
 #define NUM_MOTOR (NUM_STEPPER+NUM_CLKDIR)

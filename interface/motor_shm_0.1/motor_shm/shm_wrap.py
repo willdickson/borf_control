@@ -112,6 +112,14 @@ libmotor_shm.read_os_buffer.argstype = [
     ctypes.c_int,
     ctypes.c_int,
     ]
+libmotor_shm.read_mv_buffer.restype = ctypes.c_int
+libmotor_shm.read_mv_buffer.argstype = [
+    ctypes.c_void_p, 
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ]
 libmotor_shm.read_os_buffer_1st.restype = ctypes.c_int
 libmotor_shm.read_os_buffer_1st.argstype = [
     ctypes.POINTER(ctypes.c_char),
@@ -310,6 +318,44 @@ def read_os_buffer(mode='full'):
     else:
         raise ValueError, 'unkown mode %s'%(mode,)
     return os_data
+
+def read_mv_buffer(mode='full'):
+    """
+    Read contents of move buffer.
+
+    Keywords:
+      mode = '1st line' or 'full'
+    """
+    debug_print('read_mv_buffer')
+    buff_type = mv_buffer()
+    n = libmotor_shm.get_buffer_len(buff_type)
+    m = num_motor()
+    if n==0: # If buffer is empty return None
+        return None
+    if mode=='full':
+        mv_data = scipy.zeros((n,m), scipy.int_)
+        mv_data_ptr = mv_data.ctypes.data_as(ctypes.c_void_p)
+        s0 = mv_data.ctypes.strides[0]
+        s1 = mv_data.ctypes.strides[1]
+        nrow = mv_data.ctypes.shape[0]
+        ncol = mv_data.ctypes.shape[1]
+        flag = libmotor_shm.read_mv_buffer(mv_data_ptr,nrow,ncol,s0,s1)
+        if not flag==0:
+            error_str = 'failed to read outscan buffer: %s'%(return_code_dict[flag],)
+            raise MemoryError, error_str
+    elif mode=='1st line':
+        mv_data = scipy.zeros((m,), scipy.int_)
+        mv_data_ptr = mv_data.ctypes.data_as(ctypes.c_void_p)
+        s = mv_data.ctypes.strides[0]
+        n = mv_data.ctypes.shape[0]
+        flag = libmotor_shm.read_mv_buffer_1st(mv_data_ptr,n,s)
+        if not flag==0:
+            error_str = 'failed to read outscan buffer: %s'%(return_code_dict[flag],)
+            raise MemoryError, error_str
+    else:
+        raise ValueError, 'unkown mode %s'%(mode,)
+    return mv_data
+
         
 cmd_dict = {
     'outscan-off' : (id_cmd_stop(), 0),
