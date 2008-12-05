@@ -1,0 +1,1 @@
+apt-get install build-essential automake checkinstall x11proto-xext-dev xlibs-static-dev libxext-dev libncurses5-dev fakeroot kernel-package swig python-dev libtool libboost-program-options-dev libgsl0-dev libxmu-dev libxi-dev autoconf

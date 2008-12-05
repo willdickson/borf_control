@@ -16,5 +16,6 @@ install:
 	cp motor_ctl.ko /usr/local/lib/modules/$(UNAMER)/motor_ctl.ko
 	cp $(PWD)/scripts/motor-ctl /usr/local/bin/motor-ctl	
 clean:
-	rm motor_ctl.o motor_ctl.mod.o motor_ctl.ko
+	-rm motor_ctl.o motor_ctl.mod.o motor_ctl.ko
+	-rm *~
 

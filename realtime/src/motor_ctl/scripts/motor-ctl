@@ -1,10 +1,37 @@
 #!/usr/bin/env bash
 #
-# motor-ctl - script used to load the hard real-time motor driver
-# into the kernel. 
+#  borf_control
+#  Copyright (C) William Dickson, 2008.
+#  
+#  wbd@caltech.edu
+#  www.willdickson.com
 #
-# Will Dickson 03/12/2008
-# -----------------------------------------------------------------
+#  Released under the LGPL Licence, Version 3
+#  
+#  This file is part of borf_control.
+#
+#  simple_step is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#    
+#  simple_step is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with simple_step.  If not, see
+#  <http://www.gnu.org/licenses/>.
+#
+# --------------------------------------------------------------------
+#
+# Purpose: script used to load the hard real-time motor driver into 
+# the kernel. 
+#
+# Author: Will Dickson 03/12/2008
+#
+# --------------------------------------------------------------------
 udev_sleep=0.25
 max_cnt=5
 comedi_dev=/dev/comedi0
@@ -12,7 +39,6 @@ unamer=$(uname -r)
 rtai_dir=/usr/realtime/modules/
 daq_card_driver=ni_pcimio
 #daq_card_driver=cb_pcidas
-
 
 # Wait until udev configure comedi device or we reach max count
 function waitfor_comedi_dev {

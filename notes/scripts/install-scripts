@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+BINDIR=/usr/local/bin/
+
+echo installing rt-comedi to $BINDIR
+cp rt-comedi ${BINDIR}
+
+#echo installing rt_kcomedi to $BINDIR
+#cp rt-kcomedi ${BINDIR}

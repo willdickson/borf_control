@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+#
+# rt-comedi script use to start/stop comedi and configure 
+# daq card when comedi is built with the rtai support
+#
+# Author: Will Dickson 06/10/2008
+#
+# --------------------------------------------------------------
+
+UDEV_SLEEP=0.25
+MAX_CNT=5
+COMEDI_DEV=/dev/comedi0
+UNAMER=$(uname -r)
+RTAI_DIR=/usr/realtime/modules/
+DAQ_CARD_DRIVER=cb_pcidas
+
+function start_comedi {
+    # Loads comedi w/ required rtai modules
+    echo "starting comedi"
+
+    sudo insmod ${RTAI_DIR}rtai_hal.ko 
+    sudo insmod ${RTAI_DIR}rtai_sched.ko 
+    sudo insmod ${RTAI_DIR}rtai_fifos.ko
+    sudo insmod ${RTAI_DIR}rtai_sem.ko
+    sudo insmod ${RTAI_DIR}rtai_mbx.ko
+    sudo insmod ${RTAI_DIR}rtai_msg.ko
+    sudo insmod ${RTAI_DIR}rtai_shm.ko
+    sudo insmod ${RTAI_DIR}rtai_wd.ko
+    sudo modprobe comedi
+    sudo modprobe kcomedilib
+    sudo insmod ${RTAI_DIR}rtai_comedi.ko
+    sudo modprobe ${DAQ_CARD_DRIVER}
+    waitfor_comedi_dev # Wait for udev device configuration 
+    sudo comedi_config $COMEDI_DEV $DAQ_CARD_DRIVER
+    echo "done"
+} 
+
+function stop_comedi {
+    # Unloads comedi and required rtai modules
+    echo "stopping comedi"
+    sudo modprobe -r ${DAQ_CARD_DRIVER}
+    sudo rmmod rtai_comedi
+    sudo modprobe -r kcomedilib
+    sudo modprobe -r comedi
+    sudo rmmod rtai_wd
+    sudo rmmod rtai_shm
+    sudo rmmod rtai_msg
+    sudo rmmod rtai_mbx
+    sudo rmmod rtai_sem
+    sudo rmmod rtai_fifos
+    sudo rmmod rtai_sched
+    sudo rmmod rtai_hal
+    echo "done"
+}
+
+function waitfor_comedi_dev {
+    # Wait until udev creates comedi devices
+    cnt=0
+    until test -e ${COMEDI_DEV} || [ $cnt = $MAX_CNT ]
+    do
+        sleep $UDEV_SLEEP
+        let cnt=cnt+1
+    done
+}
+
+# Main ----------------------------------------------------------
+
+# No argumets
+if (($# == 0)); then
+    echo Error: no arguments
+    exit 1
+fi
+# At least 1 argument
+if (($# >= 1)); then
+    cmd=$1
+fi
+# At least two argumets
+if (($# >= 2)); then
+    if (( $2 > 15 )); then
+	echo Error: device number $2 too high
+	exit 1
+    fi
+    if (( $2 < 0 )); then
+	echo Error: device number $2 less then zero
+	exit 1
+    fi
+    device=/dev/comedi$2
+else
+    device=/dev/comedi0
+fi
+echo "command = $cmd"
+echo "device = $device"
+
+
+# Take action  based on command
+case $cmd in
+
+    start) start_comedi;;
+
+    stop) stop_comedi;;
+
+    *) echo unkown command $1; exit 1;;
+
+esac
+
+exit 0
+

@@ -1,0 +1,6 @@
+#!/bin/bash
+make install
+cp include/linux/comedi.h include/linux/comedilib.h /usr/local/include
+mkdir -p /usr/local/include/linux
+ln -sf /usr/local/include/comedi.h /usr/local/include/linux/comedi.h
+ln -sf /usr/local/include/comedilib.h /usr/local/include/linux/comedilib.h

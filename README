@@ -1,10 +1,10 @@
 borf_control
-===========================================
+============
 
-motor_control software provides motor control and data aquisition
-capabilities for the upgraded Bride of Robofly System (BORF) and
-possibly for the Original Robofly system (ORF). The motor_control 
-software consists of 4 main components.
+Provides hard real-time motor control and data aquisition
+capabilities.  Designed for the upgraded Bride of Robofly System
+(BORF) and possibly for the Original Robofly system (ORF). The
+borf_control software consists of 4 main components.
 
 * motor_ctl: a hard realtime driver implemented as an RTAI kernel
   module. The module provides realtime motor control and data
@@ -13,15 +13,14 @@ software consists of 4 main components.
 * libmotor_shm: a library providing user space access to shared memory
   used by the motor_ctl driver.
 
-* motor_comm: provides a user space communication w/ the motor_ctl
-  hard real-time (RTAI) driver. In addition to a python package it
-  provides a suit of commandline functions for controlling a robot
-  using the motor_ctl driver.
+* motor_comm: a python packag which provides a user space
+  communication w/ the motor_ctl hard real-time (RTAI) driver. In
+  addition it provides a suit of commandline functions for controlling
+  a robot using the motor_ctl driver.
 
 * motor_shm: a python ctypes wrapper around the libmotor_shm
   library. It is used for communication with the motor_ctl hard
   real-time (RTAI) driver.
-
 
 Installation
 
@@ -30,3 +29,7 @@ Installation
 Author
 
  * Will Dickson <wbd@caltech.edu>
+
+
+borf_control may be freely distributed and modified in accordance with
+the GNU Lesser General Public License.

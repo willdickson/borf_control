@@ -1,0 +1,40 @@
+Notes for installing from debs
+
+
+Preparation
+
+ * install required debs - as if building (see build notes)
+
+ * Get debs and tarballs of source packages and put in correct locations
+
+Installation
+
+ * Unpack tarballs
+
+ * Install debs
+ 
+Add symbolic links
+
+ * for linux
+ 
+ * for rtai
+
+ * for asm in /usr/realtime/include
+
+
+Up shared memory limit
+
+Add udev rules files 99-rtai.rules, 40-comedi.rules
+
+Add /usr/realtime/bin to PATH in /etc/environment
+
+cp /usr/local/src/comedi-0.7.76/include/linux/comedilib.h to 
+/usr/local/include/user_comedilib.h
+
+Add /usr/realtime/lib to ld.so.conf
+
+mkdir /usr/local/lib/modules/2.6.24-rtai36
+
+install setuptools
+
+after building borf_control run ldconfig 

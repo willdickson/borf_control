@@ -1,0 +1,261 @@
+System Build notes - Will Dickson 06/10/2008
+
+======================================
+RTAI Realtime system - build notes
+======================================
+
+* Installation prep
+
+  Installed fresh version of hardy using ubuntu-8.04-desktop-i386.iso
+  live CD.
+
+  Downloaded source packages for comedi and rtai: comedi-0.7.76.tar.gz,
+  comedi_calibrate-1.tar.gz, comedilib-0.8.1.tar.gz rtai-3.6.1.tar.bz2
+
+  Look in rtai-3.6.1/base/arch/x86/patches for patch
+  using hal-linux-2.6.24-x86-2.0-07.patch
+
+  Download corresponding generic linux kernel:  linux-2.6.24.tar.gz 
+
+  sudo apt-get install the follwoing packages: build-essential 
+  automake checkinstall x11proto-xext-dev xlibs-static-dev libxext-dev
+  libncurses5-dev fakeroot kernel-package swig python-dev libtool
+  libboost-program-options-dev libgsl0-dev libxmu-dev libxi-dev autoconf
+
+  copied kernel/rtai configuration files from emc2:
+  config-2.6.24-16-rtai and  config-rtai-3.6
+
+  Note, for easier kernel builds add self to src group
+  and give src group rw permisions on /usr/src/ and 
+  /usr/local/src
+
+* Build test kernel before applying the rtai patch 
+
+  extract  linux-2.6.24.tar.gz to /usr/src/ 
+  copy config-2.6.24-16-rtai to /usr/src/linux-2.6.24/.config
+  
+  run make menuconfig, 
+  load .config,  
+  then save and exit
+
+  make-kpkg clean
+  make-kpkg --rootcmd fakeroot --append-to-version -configtest --revision r1 --initrd kernel_image kernel_headers 
+  sudo dpkg -i linux-headers-2.6.24-configtest_r1_i386.deb linux-image-2.6.24-configtest_r1_i386.deb
+  reboot
+
+  test that kernel is stable w/ this configuration
+
+* Patch kernel w/ rtai patch and rebuild
+
+  backup linux-2.6.24  to linux-2.6.24.backup.tar.gz
+
+  cd /usr/src/linux
+  patch -p1 <  /path to patch/hal-linux-2.6.24-x86-2.0-07.patch
+
+  copy config-2.6.24-16-rtai to /usr/src/linux-2.6.24/.config	
+  load .config,  
+  then save and exit
+  
+  make-kpkg clean 
+  make-kpkg --rootcmd fakeroot --append-to-version -rtai36 --revision r1 --initrd kernel_image kernel_headers 
+  sudo dpkg -i linux-headers-2.6.24-rtai36_r1_i386.deb linux-image-2.6.24-rtai36_r1_i386.deb 
+  reboot
+
+* Build rtai w/o comedi support
+
+  ** unpack  
+   tar -C /usr/local/src -xvf rtai-3.6.1.tar
+   ln -s rtai-3.6.1 rtai
+
+  ** configure and build
+   cp config-rtai-3.6 to /usr/local/src/rtai/.rtai_config
+   make clean	      
+   make menuconfig  
+     -> load .rtai_config
+     -> Menu Machine (x86): adjust Number of CPUs (default = 2) to 1
+     -> Menu Add-ons: In-kernel C++ support, remove
+   make
+   sudo checkinstall --fstrans=no # Use rtai-bare as name
+   
+   ** run rtai testsuite
+      
+* Build Comedilib
+
+  ** unpack
+  tar -C /usr/local/src -xvzf comedilib-0.8.1.tar.gz 
+
+  ** configure, build and install
+  cd /usr/local/comedilib-0.8.1/		
+  sh autogen.sh
+  ./configure
+  make
+  sudo checkinstall --fstrans=no
+  mkdir -p /usr/local/var/lib/comedi/calibrations/
+
+* Build Comedi calibrations routines
+  
+  ** unpack
+  tar -C /usr/local/src -xvzf comedi_calibrate-1.tar.gz
+  
+  ** configure, build and install
+  cd /usr/local/src/comedi_calibrate-1/
+  aclocal
+  automake --add-missing
+  autoreconf
+  ./configure
+  make
+  sudo checkinstall   
+
+* Build Comedi kernel modules
+   
+   ** unpack
+   tar -C /usr/local/src -xvzf comedi-0.7.76.tar.gz
+   
+   ** configure, build and install
+   cd /usr/local/src/comedi-0.7.76
+   sh autogen.sh
+   ./configure --enable-kbuild --disable-pcmcia
+   make   
+
+   ** copy install script to comedi directory
+   cp install-rtai /usr/local/src/comedi-0.7.76/
+
+   ** create deb
+   sudo checkinstall --install-no --fstrans=no bash install-rtai 
+   sudo dpkg --force-overwrite -i comedi*.deb
+   (need to add udev stuff for creating devices)
+   	  
+
+* Rebuild rtai w/ comedi support
+
+  cd /usr/local/src/rtai
+  make distclean
+  make menuconfig
+    -> Menu Add-ons: Select Comedi support over LXRT
+    -> Menu Add-ons: Specify comedi installation directory (/usr/local/)
+  make 
+  sudo apt-get remove rtai-bare  # Remove bare the RTAI package
+  ln -s rtai-3.6.1 rtai          # If /usr/local/src/rtai disappears 
+  sudo checkinstall --fstrans=no # use rtai as name
+
+* Set create udev rules entry for comedi devices so that the /dev/comediX
+  devices are created when the comedi modules are loaded. 
+  The script 40-comedi.rules can be found in realtime_setup/40-comedi.rules.  
+
+  cp 40-comedi.rules /etc/udev/rules.d/
+  
+
+* Test installing comedi and ni_pcimio modules
+
+  ** install modules
+  sudo insmod /usr/realtime/modules/rtai_hal.ko	
+  sudo insmod /usr/realtime/modules/rtai_sched.ko 
+  sudo insmod /usr/realtime/modules/rtai_fifos.ko
+  sudo insmod /usr/realtime/modules/rtai_sem.ko
+  sudo insmod /usr/realtime/modules/rtai_mbx.ko
+  sudo insmod /usr/realtime/modules/rtai_msg.ko
+  sudo insmod /usr/realtime/modules/rtai_shm.ko
+  sudo insmod /usr/realtime/modules/rtai_wd.ko
+  sudo modprobe comedi
+  sudo modprobe kcomedilib
+  sudo insmod /usr/realtime/modules/rtai_comedi.ko
+  sudo modprobe cb_pcidas
+  sudo comedi_config /dev/comedi0 cb_pcidas
+
+
+  Check that comedi devices get created, try running comedi
+  calibrate. Note, you may have to create directory for calibration
+  data.
+  
+  ** remove modules
+  sudo modprobe -r cp_pcidas
+  sudo rmmod rtai_comedi
+  sudo modprobe -r kcomedilib
+  sudo modprobe -r comedi
+  sudo rmmod rtai_wd
+  sudo rmmod rtai_shm
+  sudo rmmod rtai_msg
+  sudo rmmod rtai_mbx
+  sudo rmmod rtai_sem
+  sudo rmmod rtai_fifos
+  sudo rmmod rtai_sched
+  sudo rmmod rtai_hal
+           
+  Note, I also created a script which performs the above actions. It
+  can be found in the realtime_setup/scripts/ directory: rt-comedi and
+  rt-kcomedi.  they are used as follows
+
+  rt-comedi start     # loads rtai/comedi modules and configures ni_pcimio to 
+                      # /dev/comedi0
+
+  rt-comedi start X   # loads rtai/comedi modules and configures ni_pcimio to
+                      # /dev/comediX where 0 <= X <= 15
+
+  rt-comedi stop      # unloads comedi and rtai modules
+  
+  
+  This script can be installed using the install-scripts function
+  found in realtime_setup/scripts directory.
+
+
+============================================
+motor-ctl realtime motor control software  
+============================================
+
+* Installation prep
+
+  install the following python packages: numpy, scipy, matplotlib,
+  ipython, setuptools, pkg-resources
+  
+  sudo apt-get install python-numpy python-numpy-doc libblas3gf libgfortran2 liblapack3gf 
+  sudo apt-get install python-scipy
+  sudo apt-get install python-matplotlib python-matplotlib-data python-matplotlib-doc
+  sudo apt-get install ipython
+  sudo apt-get install python-setuptools python-pkg-resources
+
+* Install realtime driver and shared memory library
+
+  ** get mercurial repository
+  hg clone ssh://(host ip or url)/path to repo/borf_control borf_control
+
+  ** install
+  cd borf_control
+  make clean
+  make
+  sudo make install
+  sudo ldconfig
+
+  ** test
+  motor-ctl start
+  lsmod  # look for motor_ctl
+  motor-ctl stop
+
+* Install python modules
+  
+  cd /borf_control/interface/motor_comm_0.1
+  python setup.py install or python setup.py develop
+  
+  cd /borf_control/interface/motor_shm_0.1
+  python setup.py install or python setup.py develop
+
+
+* Set locked memory limits
+  
+  add these lines or something like them to /etc/security/limits.conf
+
+  # 250 MB
+  wbd soft memlock 256000
+  wbd hard memlock 256000
+
+* Test
+
+  motor-ctl start
+  motor-comm status
+  motor-ctl stop
+
+  
+  
+  
+   
+  
+  
