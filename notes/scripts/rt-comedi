@@ -18,38 +18,38 @@ function start_comedi {
     # Loads comedi w/ required rtai modules
     echo "starting comedi"
 
-    sudo insmod ${RTAI_DIR}rtai_hal.ko 
-    sudo insmod ${RTAI_DIR}rtai_sched.ko 
-    sudo insmod ${RTAI_DIR}rtai_fifos.ko
-    sudo insmod ${RTAI_DIR}rtai_sem.ko
-    sudo insmod ${RTAI_DIR}rtai_mbx.ko
-    sudo insmod ${RTAI_DIR}rtai_msg.ko
-    sudo insmod ${RTAI_DIR}rtai_shm.ko
-    sudo insmod ${RTAI_DIR}rtai_wd.ko
-    sudo modprobe comedi
-    sudo modprobe kcomedilib
-    sudo insmod ${RTAI_DIR}rtai_comedi.ko
-    sudo modprobe ${DAQ_CARD_DRIVER}
+    insmod ${RTAI_DIR}rtai_hal.ko 
+    insmod ${RTAI_DIR}rtai_sched.ko 
+    insmod ${RTAI_DIR}rtai_fifos.ko
+    insmod ${RTAI_DIR}rtai_sem.ko
+    insmod ${RTAI_DIR}rtai_mbx.ko
+    insmod ${RTAI_DIR}rtai_msg.ko
+    insmod ${RTAI_DIR}rtai_shm.ko
+    insmod ${RTAI_DIR}rtai_wd.ko
+    modprobe comedi
+    modprobe kcomedilib
+    insmod ${RTAI_DIR}rtai_comedi.ko
+    modprobe ${DAQ_CARD_DRIVER}
     waitfor_comedi_dev # Wait for udev device configuration 
-    sudo comedi_config $COMEDI_DEV $DAQ_CARD_DRIVER
+    comedi_config $COMEDI_DEV $DAQ_CARD_DRIVER
     echo "done"
 } 
 
 function stop_comedi {
     # Unloads comedi and required rtai modules
     echo "stopping comedi"
-    sudo modprobe -r ${DAQ_CARD_DRIVER}
-    sudo rmmod rtai_comedi
-    sudo modprobe -r kcomedilib
-    sudo modprobe -r comedi
-    sudo rmmod rtai_wd
-    sudo rmmod rtai_shm
-    sudo rmmod rtai_msg
-    sudo rmmod rtai_mbx
-    sudo rmmod rtai_sem
-    sudo rmmod rtai_fifos
-    sudo rmmod rtai_sched
-    sudo rmmod rtai_hal
+    modprobe -r ${DAQ_CARD_DRIVER}
+    rmmod rtai_comedi
+    modprobe -r kcomedilib
+    modprobe -r comedi
+    rmmod rtai_wd
+    rmmod rtai_shm
+    rmmod rtai_msg
+    rmmod rtai_mbx
+    rmmod rtai_sem
+    rmmod rtai_fifos
+    rmmod rtai_sched
+    rmmod rtai_hal
     echo "done"
 }
 
